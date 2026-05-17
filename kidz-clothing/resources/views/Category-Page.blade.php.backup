@@ -1,0 +1,643 @@
+@include('partials.header')
+
+<style>
+/* ── Category Page (cp-) ── */
+.cp-page-wrapper { max-width:1280px; width:100%; margin:0 auto; overflow:hidden; box-sizing:border-box; }
+.cp-breadcrumb { display:flex; align-items:center; gap:6px; font-size:12.5px; padding:14px 24px 0; color:#888; }
+.cp-breadcrumb a { display:flex; align-items:center; gap:4px; color:#888; text-decoration:none; transition:color 0.2s; }
+.cp-breadcrumb a:hover { color:#333; }
+.cp-bc-sep { color:#bbb; font-size:14px; }
+.cp-bc-current { color:#333; font-weight:500; }
+.cp-page-title { text-align:center; font-size:26px; font-weight:700; color:#111; padding:14px 24px 0; letter-spacing:0.2px; }
+.cp-toolbar { display:flex; align-items:center; justify-content:space-between; padding:14px 24px 10px; margin-bottom:6px; }
+.cp-filter-toggle-btn { display:flex; align-items:center; gap:8px; background:#faf9f7; border:1.5px solid #e0e0e0; border-radius:10px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:500; color:#222; cursor:pointer; padding:9px 16px; transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; letter-spacing:0.1px; }
+.cp-filter-toggle-btn:hover { border-color:#bbb; background:#f5f4f1; box-shadow:0 2px 8px rgba(0,0,0,0.07); }
+/* Sort dropdown */
+.cp-sort-wrap { display:flex; align-items:center; gap:6px; position:relative; }
+.cp-sort-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border:1.5px solid #ddd; border-radius:8px; background:#fff; font-family:'Outfit',sans-serif; font-size:14px; font-weight:500; color:#222; cursor:pointer; transition:border-color 0.2s,box-shadow 0.2s; white-space:nowrap; }
+.cp-sort-btn:hover { border-color:#bbb; box-shadow:0 2px 8px rgba(0,0,0,0.07); }
+.cp-sort-btn svg { transition:transform 0.22s; color:#555; }
+.cp-sort-btn.cp-sort-open svg { transform:rotate(180deg); }
+.cp-sort-menu { display:none; position:absolute; top:calc(100% + 6px); right:0; min-width:200px; background:#fff; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.13); list-style:none; padding:6px 0; z-index:500; border:1px solid #f0f0f0; }
+.cp-sort-menu.cp-sort-menu--open { display:block; }
+.cp-sort-item { padding:10px 18px; font-size:14px; color:#222; cursor:pointer; transition:background 0.15s; }
+.cp-sort-item:hover { background:#f7f7f7; }
+.cp-sort-item--active { font-weight:600; color:#111; }
+/* Active filters */
+.cp-active-filters { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 24px 12px; border-bottom:1px solid #ebebeb; }
+.cp-af-tags { display:flex; flex-wrap:wrap; gap:8px; }
+.cp-af-tag { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border:1.5px solid #f06292; border-radius:8px; font-size:13px; font-family:'Outfit',sans-serif; color:#222; background:#fff; white-space:nowrap; }
+.cp-af-tag-x { background:none; border:none; cursor:pointer; color:#888; font-size:14px; line-height:1; padding:0; display:flex; align-items:center; transition:color 0.15s; }
+.cp-af-tag-x:hover { color:#f06292; }
+.cp-af-remove-all { background:none; border:none; font-family:'Outfit',sans-serif; font-size:13px; color:#555; cursor:pointer; text-decoration:underline; text-underline-offset:3px; white-space:nowrap; transition:color 0.2s; padding:0; }
+.cp-af-remove-all:hover { color:#f06292; }
+/* Filter Drawer (cpd-) */
+.cpd-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.38); z-index:1100; backdrop-filter:blur(1px); }
+.cpd-overlay--show { display:block; }
+.cpd-drawer { position:fixed; top:0; left:-340px; width:300px; height:100dvh; background:#fff; z-index:1200; display:flex; flex-direction:column; box-shadow:4px 0 28px rgba(0,0,0,0.14); transition:left 0.32s cubic-bezier(0.4,0,0.2,1); }
+.cpd-drawer--open { left:0; }
+.cpd-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 16px; border-bottom:1.5px solid #f0f0f0; flex-shrink:0; }
+.cpd-title { font-size:16px; font-weight:700; color:#111; letter-spacing:0.2px; }
+.cpd-close { width:30px; height:30px; border:none; background:none; font-size:18px; color:#444; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background 0.2s,color 0.2s; line-height:1; }
+.cpd-close:hover { background:#f5f5f5; color:#111; }
+.cpd-body { overflow-y:auto; flex:1; padding-bottom:24px; }
+.cpd-section { border-bottom:1px solid #f0f0f0; }
+.cpd-acc-btn { width:100%; display:flex; align-items:center; justify-content:space-between; padding:15px 20px; background:none; border:none; font-family:'Outfit',sans-serif; font-size:14.5px; font-weight:600; color:#111; cursor:pointer; text-align:left; transition:color 0.2s; }
+.cpd-chevron { color:#666; flex-shrink:0; transition:transform 0.28s ease; }
+.cpd-acc-panel { display:none; padding:4px 20px 18px; }
+.cpd-acc-panel.cpd-acc-open { display:block; }
+.cpd-cb-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 8px; }
+.cpd-cb-item { display:flex; align-items:center; gap:8px; cursor:pointer; }
+.cpd-cb { width:15px; height:15px; accent-color:#f06292; cursor:pointer; flex-shrink:0; margin:0; }
+.cpd-cb-label { font-size:13px; color:#111; line-height:1.3; }
+.cpd-cb-label em { font-style:normal; color:#888; font-size:12px; }
+/* Price range slider */
+.cpd-dual-slider { position:relative; height:36px; margin:8px 0 20px; }
+.cpd-dual-slider::before { content:''; position:absolute; top:50%; left:0; right:0; height:3px; background:#e0e0e0; border-radius:4px; transform:translateY(-50%); z-index:0; }
+.cpd-slider-track { position:absolute; top:50%; height:3px; background:#111; border-radius:4px; transform:translateY(-50%); z-index:1; pointer-events:none; }
+.cpd-range-input { -webkit-appearance:none; appearance:none; position:absolute; width:100%; height:3px; background:transparent; border-radius:4px; outline:none; pointer-events:none; top:50%; transform:translateY(-50%); z-index:2; }
+.cpd-range-input::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#fff; border:2px solid #111; box-shadow:0 0 0 2px #fff,0 0 0 4px #111; cursor:pointer; pointer-events:all; }
+.cpd-range-input::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:#fff; border:2px solid #111; cursor:pointer; pointer-events:all; }
+.cpd-price-row { display:flex; align-items:center; gap:10px; margin-top:4px; }
+.cpd-price-box { display:flex; align-items:center; gap:6px; border:1.5px solid #ddd; border-radius:8px; padding:6px 10px; flex:1; background:#fff; transition:border-color 0.2s; }
+.cpd-price-box:focus-within { border-color:#aaa; }
+.cpd-rs-label { font-size:13px; color:#888; font-weight:500; flex-shrink:0; }
+.cpd-price-input { width:100%; border:none; outline:none; font-size:14px; font-family:'Outfit',sans-serif; font-weight:600; color:#111; background:transparent; min-width:0; }
+.cpd-price-input::-webkit-outer-spin-button,.cpd-price-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.cpd-price-input[type=number] { -moz-appearance:textfield; }
+.cpd-price-dash { color:#bbb; font-size:16px; flex-shrink:0; }
+.cpd-avail-wrap { display:flex; gap:10px; flex-wrap:wrap; }
+.cpd-avail-btn { flex:1; padding:8px 6px; border:1.5px solid #ddd; border-radius:8px; font-family:'Outfit',sans-serif; font-size:13px; color:#111; background:#fff; cursor:pointer; transition:border-color 0.2s,background 0.2s,color 0.2s; text-align:center; white-space:nowrap; }
+.cpd-avail-btn em { font-style:normal; color:#888; }
+.cpd-avail-btn:hover { border-color:#f06292; color:#f06292; }
+.cpd-avail-btn--active { border-color:#111; background:#111; color:#fff !important; }
+.cpd-avail-btn--active em { color:#ccc !important; }
+/* Grid */
+.cp-grid-wrap { padding:16px 24px 60px; }
+.cp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.cp-card { display:block; text-decoration:none; background:#fff; transition:opacity 0.2s; padding-bottom:20px; }
+.cp-card:hover { opacity:0.88; }
+.cp-card-img { position:relative; background:#f0f0f0; overflow:hidden; aspect-ratio:3/4; }
+.cp-card-img img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; transition:transform 0.45s ease; }
+.cp-card:hover .cp-card-img img { transform:scale(1.04); }
+.cp-badge-new { position:absolute; top:18px; left:-24px; width:90px; background:#f06292; color:#fff; font-size:11px; font-weight:700; text-align:center; padding:5px 0; transform:rotate(-45deg); z-index:2; letter-spacing:0.5px; }
+.cp-card-info { padding:10px 4px 0; }
+.cp-card-name { font-size:13.5px; font-weight:500; color:#111; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cp-card-price { display:flex; align-items:center; gap:8px; }
+.cp-old { font-size:12.5px; color:#aaa; text-decoration:line-through; }
+.cp-new { font-size:13.5px; font-weight:700; color:#111; }
+/* Pagination */
+.cp-pagination { display:flex; justify-content:center; gap:8px; margin-top:40px; }
+.cp-page-btn { padding:8px 16px; border:1.5px solid #ddd; border-radius:6px; background:#fff; font-family:'Outfit',sans-serif; font-size:14px; color:#555; cursor:pointer; transition:border-color 0.2s,background 0.2s,color 0.2s; }
+.cp-page-btn:hover { border-color:#f06292; color:#f06292; }
+.cp-page-btn--active { background:#f06292; border-color:#f06292; color:#fff; font-weight:700; }
+.cp-page-next { padding:8px 20px; }
+/* Responsive */
+@media (max-width:900px) { .cp-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:600px) { .cp-grid { grid-template-columns:repeat(2,1fr); gap:16px; } .cp-grid-wrap { padding:14px 16px 40px; } .cp-toolbar { padding:12px 16px 10px; } .cp-page-title { font-size:20px; padding:12px 16px 0; } .cp-breadcrumb { padding:12px 16px 0; } .cp-card-info { padding:10px 8px 0; } .cp-card { border-radius: 12px; overflow: hidden; border: 1px solid #f0f0f0; box-shadow: 0 2px 10px rgba(0,0,0,0.04); } }
+</style>
+
+
+    <!-- ════════════════════════════════
+         Category Page
+    ════════════════════════════════ -->
+    <div class="cp-page-wrapper">
+
+    <!-- Breadcrumb -->
+    <nav class="cp-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ route('home') }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+        </a>
+        <span class="cp-bc-sep">›</span>
+        <a href="{{ route('categories.index') }}">Categories</a>
+        @isset($categorySlug)
+            <span class="cp-bc-sep">›</span>
+            <span class="cp-bc-current">{{ $categoryName ?? ucfirst(str_replace('-', ' ', $categorySlug)) }}</span>
+        @endisset
+    </nav>
+
+    <!-- Page Title -->
+    <h1 class="cp-page-title">
+        @isset($categorySlug)
+            {{ $categoryName ?? ucfirst(str_replace('-', ' ', $categorySlug)) }}
+        @else
+            All Categories
+        @endisset
+    </h1>
+
+    <!-- Toolbar -->
+    <div class="cp-toolbar">
+        <button class="cp-filter-toggle-btn" id="cp-filter-toggle-btn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="18" x2="20" y2="18"/>
+                <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="9" cy="18" r="2" fill="currentColor" stroke="none"/>
+            </svg>
+            Filters
+        </button>
+        <!-- Custom Sort Dropdown -->
+        <div class="cp-sort-wrap" id="cp-sort-wrap">
+            <button class="cp-sort-btn" id="cp-sort-btn">
+                Sort
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <ul class="cp-sort-menu" id="cp-sort-menu">
+                <li class="cp-sort-item cp-sort-item--active" data-value="featured">Featured</li>
+                <li class="cp-sort-item" data-value="best-selling">Best selling</li>
+                <li class="cp-sort-item" data-value="alpha-asc">Alphabetically, A-Z</li>
+                <li class="cp-sort-item" data-value="alpha-desc">Alphabetically, Z-A</li>
+                <li class="cp-sort-item" data-value="price-asc">Price, low to high</li>
+                <li class="cp-sort-item" data-value="price-desc">Price, high to low</li>
+                <li class="cp-sort-item" data-value="date-old">Date, old to new</li>
+                <li class="cp-sort-item" data-value="date-new">Date, new to old</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Active Filters Bar -->
+    <div class="cp-active-filters" id="cp-active-filters" style="display:none;">
+        <div class="cp-af-tags" id="cp-af-tags"></div>
+        <button class="cp-af-remove-all" id="cp-af-remove-all">Remove all</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         Filter Side Drawer (Left Side)
+    ══════════════════════════════════════════ -->
+
+    <!-- Overlay -->
+    <div class="cpd-overlay" id="cpd-overlay"></div>
+
+    <!-- Drawer -->
+    <div class="cpd-drawer" id="cpd-drawer">
+
+        <!-- Header -->
+        <div class="cpd-header">
+            <span class="cpd-title">Filters</span>
+            <button class="cpd-close" id="cpd-close" aria-label="Close filters">&#x2715;</button>
+        </div>
+
+        <!-- Scrollable Body -->
+        <div class="cpd-body">
+
+            <!-- ── Size ── -->
+            <div class="cpd-section">
+                <button class="cpd-acc-btn" id="cpd-acc-size">
+                    <span>Size</span>
+                    <svg class="cpd-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="cpd-acc-panel" id="cpd-panel-size">
+                    <div class="cpd-cb-grid">
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">2-4Y <em>(23)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">4-6Y <em>(18)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">6-8Y <em>(15)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">8-10Y <em>(12)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">10-12Y <em>(9)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">12-14Y <em>(7)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Newborn <em>(11)</em></span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">0-3M <em>(8)</em></span></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Product Type ── -->
+            <div class="cpd-section">
+                <button class="cpd-acc-btn" id="cpd-acc-type">
+                    <span>Product Type</span>
+                    <svg class="cpd-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="cpd-acc-panel" id="cpd-panel-type">
+                    <div class="cpd-cb-grid">
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Casual Shirts</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">T-Shirts</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Trousers</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Shorts</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Frocks</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Dresses</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Shalwar Kameez</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Jogger Sets</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Jackets</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Sweaters</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Price ── -->
+            <div class="cpd-section">
+                <button class="cpd-acc-btn" id="cpd-acc-price">
+                    <span>Price</span>
+                    <svg class="cpd-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="cpd-acc-panel" id="cpd-panel-price">
+                    <!-- Dual Range Slider -->
+                    <div class="cpd-dual-slider">
+                        <div class="cpd-slider-track" id="cpd-slider-track"></div>
+                        <input type="range" class="cpd-range-input" id="cpd-range-min"
+                               min="0" max="10000" value="1900" step="100">
+                        <input type="range" class="cpd-range-input" id="cpd-range-max"
+                               min="0" max="10000" value="4900" step="100">
+                    </div>
+                    <!-- Price Inputs -->
+                    <div class="cpd-price-row">
+                        <div class="cpd-price-box">
+                            <span class="cpd-rs-label">Rs</span>
+                            <input type="number" class="cpd-price-input" id="cpd-price-min" value="1900">
+                        </div>
+                        <span class="cpd-price-dash">—</span>
+                        <div class="cpd-price-box">
+                            <span class="cpd-rs-label">Rs</span>
+                            <input type="number" class="cpd-price-input" id="cpd-price-max" value="4900">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ── Availability ── -->
+            <div class="cpd-section">
+                <button class="cpd-acc-btn" id="cpd-acc-avail">
+                    <span>Availability</span>
+                    <svg class="cpd-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="cpd-acc-panel" id="cpd-panel-avail">
+                    <div class="cpd-avail-wrap">
+                        <button class="cpd-avail-btn cpd-avail-btn--active" id="cpd-avail-in">In Stock <em>(230)</em></button>
+                        <button class="cpd-avail-btn" id="cpd-avail-out">Out of Stock <em>(90)</em></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Gender ── -->
+            <div class="cpd-section">
+                <button class="cpd-acc-btn" id="cpd-acc-gender">
+                    <span>Gender</span>
+                    <svg class="cpd-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="cpd-acc-panel" id="cpd-panel-gender">
+                    <div class="cpd-cb-grid">
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Boys</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Girls</span></label>
+                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb"><span class="cpd-cb-label">Unisex</span></label>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.cpd-body -->
+
+    </div><!-- /.cpd-drawer -->
+
+    <!-- Product Grid -->
+    <div class="cp-grid-wrap">
+        <div class="cp-grid" id="cp-grid">
+
+            <a href="{{ route('products.show', 1) }}" class="cp-card" id="cp-card-1">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/baby-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 2) }}" class="cp-card" id="cp-card-2">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 3) }}" class="cp-card" id="cp-card-3">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/girls-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 4) }}" class="cp-card" id="cp-card-4">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/partywear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 1) }}" class="cp-card" id="cp-card-5">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/0-2year.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 2) }}" class="cp-card" id="cp-card-6">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/baby-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 3) }}" class="cp-card" id="cp-card-7">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 4) }}" class="cp-card" id="cp-card-8">
+                <div class="cp-card-img">
+                    <span class="cp-badge-new">New</span>
+                    <img src="{{ asset('images/img-home/girls-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 1) }}" class="cp-card" id="cp-card-9">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/partywear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 2) }}" class="cp-card" id="cp-card-10">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/0-2year.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 3) }}" class="cp-card" id="cp-card-11">
+                <div class="cp-card-img">
+                    <img src="{{ asset('images/img-home/baby-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('products.show', 4) }}" class="cp-card" id="cp-card-12">
+                <div class="cp-card-img">
+                    <span class="cp-badge-new">New</span>
+                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="Ribbed Jogging Set">
+                </div>
+                <div class="cp-card-info">
+                    <p class="cp-card-name">Ribbed Jogging Set</p>
+                    <div class="cp-card-price">
+                        <span class="cp-old">Rs. 2,000</span>
+                        <span class="cp-new">Rs. 1,800</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="cp-pagination" id="cp-pagination">
+            <button class="cp-page-btn cp-page-btn--active" id="cp-pg-1">1</button>
+            <button class="cp-page-btn" id="cp-pg-2">2</button>
+            <button class="cp-page-btn" id="cp-pg-3">3</button>
+            <button class="cp-page-btn cp-page-next" id="cp-pg-next">Next ›</button>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         Scripts
+    ════════════════════════════════ -->
+    <script>
+        // ── Filter Drawer open/close ──
+        var filterBtn  = document.getElementById('cp-filter-toggle-btn');
+        var drawer     = document.getElementById('cpd-drawer');
+        var overlay    = document.getElementById('cpd-overlay');
+        var closeBtn   = document.getElementById('cpd-close');
+
+        function openDrawer()  { drawer.classList.add('cpd-drawer--open');  overlay.classList.add('cpd-overlay--show'); }
+        function closeDrawer() { drawer.classList.remove('cpd-drawer--open'); overlay.classList.remove('cpd-overlay--show'); }
+
+        filterBtn.addEventListener('click', openDrawer);
+        closeBtn.addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+
+        // ── Custom Sort Dropdown ──
+        var sortBtn  = document.getElementById('cp-sort-btn');
+        var sortMenu = document.getElementById('cp-sort-menu');
+
+        sortBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var isOpen = sortMenu.classList.contains('cp-sort-menu--open');
+            sortMenu.classList.toggle('cp-sort-menu--open', !isOpen);
+            sortBtn.classList.toggle('cp-sort-open', !isOpen);
+        });
+
+        document.querySelectorAll('.cp-sort-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                document.querySelectorAll('.cp-sort-item').forEach(function (i) { i.classList.remove('cp-sort-item--active'); });
+                item.classList.add('cp-sort-item--active');
+                // Update button text (keep chevron svg)
+                sortBtn.childNodes[0].textContent = item.textContent + ' ';
+                sortMenu.classList.remove('cp-sort-menu--open');
+                sortBtn.classList.remove('cp-sort-open');
+            });
+        });
+
+        document.addEventListener('click', function () {
+            sortMenu.classList.remove('cp-sort-menu--open');
+            sortBtn.classList.remove('cp-sort-open');
+        });
+
+        // ── Accordion sections ──
+        document.querySelectorAll('.cpd-acc-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var panelId = btn.id.replace('cpd-acc-', 'cpd-panel-');
+                var panel   = document.getElementById(panelId);
+                var chevron = btn.querySelector('.cpd-chevron');
+                var isOpen  = panel.classList.contains('cpd-acc-open');
+                panel.classList.toggle('cpd-acc-open', !isOpen);
+                chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+        });
+
+        // Init: chevrons for already-open panels
+        document.querySelectorAll('.cpd-acc-panel.cpd-acc-open').forEach(function (panel) {
+            var btnId   = panel.id.replace('cpd-panel-', 'cpd-acc-');
+            var chevron = document.getElementById(btnId) && document.getElementById(btnId).querySelector('.cpd-chevron');
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+        });
+
+        // ── Dual Range Slider — Price ──
+        var rangeMin  = document.getElementById('cpd-range-min');
+        var rangeMax  = document.getElementById('cpd-range-max');
+        var inputMin  = document.getElementById('cpd-price-min');
+        var inputMax  = document.getElementById('cpd-price-max');
+        var track     = document.getElementById('cpd-slider-track');
+
+        function updateSlider() {
+            var min    = parseInt(rangeMin.min);
+            var max    = parseInt(rangeMin.max);
+            var valMin = parseInt(rangeMin.value);
+            var valMax = parseInt(rangeMax.value);
+            var pctMin = ((valMin - min) / (max - min)) * 100;
+            var pctMax = ((valMax - min) / (max - min)) * 100;
+            track.style.left  = pctMin + '%';
+            track.style.width = (pctMax - pctMin) + '%';
+            inputMin.value = valMin;
+            inputMax.value = valMax;
+        }
+
+        if (rangeMin && rangeMax && track) {
+            rangeMin.addEventListener('input', function () {
+                if (parseInt(rangeMin.value) >= parseInt(rangeMax.value))
+                    rangeMin.value = parseInt(rangeMax.value) - 100;
+                updateSlider();
+            });
+            rangeMax.addEventListener('input', function () {
+                if (parseInt(rangeMax.value) <= parseInt(rangeMin.value))
+                    rangeMax.value = parseInt(rangeMin.value) + 100;
+                updateSlider();
+            });
+            inputMin.addEventListener('input', function () {
+                rangeMin.value = inputMin.value; updateSlider();
+            });
+            inputMax.addEventListener('input', function () {
+                rangeMax.value = inputMax.value; updateSlider();
+            });
+            updateSlider(); // init
+        }
+
+        // ── Availability toggle ──
+        var availBtns = document.querySelectorAll('.cpd-avail-btn');
+        availBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                availBtns.forEach(function (b) { b.classList.remove('cpd-avail-btn--active'); });
+                btn.classList.add('cpd-avail-btn--active');
+            });
+        });
+
+        // ── Active Filter Tags ──
+        var afBar      = document.getElementById('cp-active-filters');
+        var afTags     = document.getElementById('cp-af-tags');
+        var afRemoveAll = document.getElementById('cp-af-remove-all');
+
+        function updateAfBar() {
+            afBar.style.display = afTags.children.length > 0 ? 'flex' : 'none';
+        }
+
+        function addTag(label, key, cb) {
+            // avoid duplicates
+            if (document.getElementById('af-tag-' + key)) return;
+            var tag = document.createElement('span');
+            tag.className = 'cp-af-tag';
+            tag.id = 'af-tag-' + key;
+            tag.innerHTML = label + ' <button class="cp-af-tag-x" aria-label="Remove">&#x2715;</button>';
+            tag.querySelector('.cp-af-tag-x').addEventListener('click', function () {
+                if (cb) { cb.checked = false; }
+                tag.remove();
+                updateAfBar();
+            });
+            afTags.appendChild(tag);
+            updateAfBar();
+        }
+
+        function removeTag(key) {
+            var t = document.getElementById('af-tag-' + key);
+            if (t) t.remove();
+            updateAfBar();
+        }
+
+        // Attach to all checkboxes
+        document.querySelectorAll('.cpd-cb').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var label = cb.closest('.cpd-cb-item').querySelector('.cpd-cb-label').textContent.trim();
+                var key   = label.replace(/\s+/g, '-').replace(/[()]/g, '');
+                // Find section name
+                var section = cb.closest('.cpd-section');
+                var sectionName = section ? section.querySelector('.cpd-acc-btn span').textContent.trim() : '';
+                var fullLabel   = sectionName + ': ' + label;
+                if (cb.checked) {
+                    addTag(fullLabel, key, cb);
+                } else {
+                    removeTag(key);
+                }
+            });
+        });
+
+        // Remove all
+        afRemoveAll.addEventListener('click', function () {
+            document.querySelectorAll('.cpd-cb').forEach(function (cb) { cb.checked = false; });
+            afTags.innerHTML = '';
+            updateAfBar();
+        });
+
+        // ── Pagination active ──
+        document.querySelectorAll('.cp-page-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.cp-page-btn').forEach(function (b) { b.classList.remove('cp-page-btn--active'); });
+                btn.classList.add('cp-page-btn--active');
+            });
+        });
+    </script>
+
+    </div><!-- /.cp-page-wrapper -->
+
+@include('partials.footer')
