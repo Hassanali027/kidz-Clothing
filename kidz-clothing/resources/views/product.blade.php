@@ -63,8 +63,146 @@
 .pd-acc-icon { font-size:18px; color:#888; transition:transform 0.25s; display:inline-block; }
 .pd-acc-body { display:none; padding:0 0 14px; font-size:13.5px; color:#000; line-height:1.65; }
 .pd-acc-body.pd-acc-open { display:block; }
-@media (max-width:900px) { .pd-inner { flex-direction:column; } .pd-gallery { flex:none; width:100%; } .pd-main-img { height:auto; } }
-@media (max-width:600px) { .pd-section { padding:24px 16px 40px; } .pd-breadcrumb { padding:10px 16px; } .pd-gallery { flex-direction:column-reverse; } .pd-thumbs { flex-direction:row; overflow-x:auto; } .pd-thumb { flex:0 0 64px; height:64px; } .pd-main-img { height:auto; } .pd-title { font-size:18px; } }
+/* ── Color + Size Row ── */
+.pd-color-size-row { display:flex; gap:16px; }
+.pd-color-size-row .pd-option-group { flex:1; }
+
+/* ── Tablet ── */
+@media (max-width:900px) {
+    .pd-inner { flex-direction:column; gap:24px; align-items:stretch; }
+    .pd-gallery { flex:none; width:100%; }
+    .pd-info { width:100%; }
+    .pd-main-img { height:auto; }
+    .pd-section { padding:28px 24px 50px; }
+}
+/* ── Mobile ── */
+@media (max-width:600px) {
+    .pd-section { padding:0 0 40px; }
+    .pd-breadcrumb { padding:10px 16px; font-size:12px; }
+    .pd-inner { width:100%; max-width:none; gap:0; }
+
+    /* Gallery: main image on top, thumbs row below */
+    .pd-gallery {
+        flex-direction: column;
+        gap: 0;
+    }
+    .pd-main-img-wrap {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+    }
+    .pd-main-img {
+        height: 320px;
+        object-fit: cover;
+        object-position: top center;
+    }
+    .pd-thumbs {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+        scrollbar-width: none;
+    }
+    .pd-thumbs::-webkit-scrollbar { display:none; }
+    .pd-thumb {
+        flex: 0 0 60px;
+        width: 60px;
+        height: 60px;
+    }
+    .pd-zoom-btn { display:none; }
+
+    /* Info panel */
+    .pd-info {
+        gap: 14px;
+        width: 100%;
+        padding: 20px 20px 0;
+    }
+    .pd-title-row {
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .pd-title { font-size: 17px; line-height: 1.35; }
+    .pd-stock { font-size: 12px; padding: 3px 9px; flex-shrink: 0; }
+    .pd-price-new { font-size: 20px; }
+    .pd-price-old { font-size: 14px; }
+
+    /* Color + Size side by side */
+    .pd-color-size-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border: 1.5px solid #eee;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .pd-color-size-row .pd-option-group {
+        padding: 12px 14px;
+        border: none;
+    }
+    .pd-color-size-row .pd-option-group:first-child {
+        border-right: 1.5px solid #eee;
+    }
+
+    /* Options */
+    .pd-option-label { font-size: 13px; margin-bottom: 8px; }
+    .pd-size-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .pd-size-guide { font-size: 11px; }
+    .pd-sizes { gap: 5px; flex-wrap: wrap; }
+    .pd-size-btn { padding: 4px 10px; font-size: 12px; }
+    .pd-colors { gap: 6px; flex-wrap: wrap; }
+    .pd-color-swatch { width: 26px; height: 26px; }
+
+    /* Quantity */
+    .pd-qty-wrap { border-radius: 8px; }
+    .pd-qty-btn { width: 42px; height: 42px; font-size: 20px; }
+    .pd-qty-input { width: 52px; height: 42px; font-size: 15px; }
+
+    /* CTA Buttons */
+    .pd-cta-btns { gap: 10px; }
+    .pd-btn-cart {
+        padding: 15px;
+        font-size: 15px;
+        border-radius: 10px;
+    }
+    .pd-btn-buy {
+        padding: 14px;
+        font-size: 15px;
+        border-radius: 10px;
+    }
+
+    /* Accordion */
+    .pd-accordion {
+        width: 100%;
+        margin-top: 6px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .pd-acc-toggle {
+        min-height: 56px;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 0;
+    }
+    .pd-acc-toggle span:first-child {
+        min-width: 0;
+        padding-right: 18px;
+    }
+    .pd-acc-icon {
+        flex: 0 0 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    .pd-acc-body {
+        padding: 0 0 18px;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+}
 
 /* ── You May Also Like (yal-) ── */
 .yal-section { padding:50px 40px 60px; background:#fff; border-top:1px solid #f0f0f0; }
@@ -196,31 +334,33 @@
 
                 <div class="pd-divider"></div>
 
-                <!-- Color -->
-                @if($product->color)
-                <div class="pd-option-group" id="pd-color-group">
-                    @php
-                        $colors = explode(',', $product->color);
-                        $colors = array_map('trim', $colors);
-                    @endphp
-                    <p class="pd-option-label">Color: <strong id="pd-color-val">{{ $colors[0] }}</strong></p>
-                    <div class="pd-colors">
-                        @foreach($colors as $index => $color)
-                            <button type="button" class="pd-color-swatch {{ $index == 0 ? 'pd-color-swatch--active' : '' }}" 
-                                style="background: {{ strtolower($color) == 'multi-color' ? 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)' : (in_array(strtolower($color), ['white', 'black', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'grey', 'brown', 'orange']) ? strtolower($color) : '#eee') }};" 
-                                data-color="{{ $color }}" aria-label="{{ $color }}">
-                                @if(!in_array(strtolower($color), ['white', 'black', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'grey', 'brown', 'orange', 'multi-color']))
-                                    <span style="font-size: 10px; display: block; text-align: center; margin-top: 5px;">{{ substr($color, 0, 1) }}</span>
-                                @endif
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
+                <!-- Color + Size Row -->
+                <div class="pd-color-size-row">
 
-                <!-- Size -->
-                <div class="pd-option-group" id="pd-size-group">
-                    <div class="pd-size-header">
+                    <!-- Color -->
+                    @if($product->color)
+                    <div class="pd-option-group" id="pd-color-group">
+                        @php
+                            $colors = explode(',', $product->color);
+                            $colors = array_map('trim', $colors);
+                        @endphp
+                        <p class="pd-option-label">Color: <strong id="pd-color-val">{{ $colors[0] }}</strong></p>
+                        <div class="pd-colors">
+                            @foreach($colors as $index => $color)
+                                <button type="button" class="pd-color-swatch {{ $index == 0 ? 'pd-color-swatch--active' : '' }}"
+                                    style="background: {{ strtolower($color) == 'multi-color' ? 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)' : (in_array(strtolower($color), ['white', 'black', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'grey', 'brown', 'orange']) ? strtolower($color) : '#eee') }};"
+                                    data-color="{{ $color }}" aria-label="{{ $color }}">
+                                    @if(!in_array(strtolower($color), ['white', 'black', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'grey', 'brown', 'orange', 'multi-color']))
+                                        <span style="font-size:10px;display:block;text-align:center;margin-top:5px;">{{ substr($color, 0, 1) }}</span>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Size -->
+                    <div class="pd-option-group" id="pd-size-group">
                         @if($product->size)
                             @php
                                 $sizes = explode(',', $product->size);
@@ -228,20 +368,21 @@
                             @endphp
                             <p class="pd-option-label">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
                         @else
-                            <p class="pd-option-label">Age Group: <strong id="pd-size-val">{{ $product->age_group ?? 'Standard' }}</strong></p>
+                            <p class="pd-option-label">Age: <strong id="pd-size-val">{{ $product->age_group ?? 'Standard' }}</strong></p>
                         @endif
                         <a href="#" class="pd-size-guide" id="pd-size-guide-link" onclick="openSizeGuide(event)">Size Guide ›</a>
+                        <div class="pd-sizes" style="margin-top:8px;">
+                            @if($product->size)
+                                @foreach($sizes as $index => $size)
+                                    <button type="button" class="pd-size-btn {{ $index == 0 ? 'pd-size-btn--active' : '' }}" data-size="{{ $size }}">{{ $size }}</button>
+                                @endforeach
+                            @else
+                                <button type="button" class="pd-size-btn pd-size-btn--active" data-size="{{ $product->age_group ?? 'Standard' }}">{{ $product->age_group ?? 'Standard' }}</button>
+                            @endif
+                        </div>
                     </div>
-                    <div class="pd-sizes">
-                        @if($product->size)
-                            @foreach($sizes as $index => $size)
-                                <button type="button" class="pd-size-btn {{ $index == 0 ? 'pd-size-btn--active' : '' }}" data-size="{{ $size }}">{{ $size }}</button>
-                            @endforeach
-                        @else
-                            <button type="button" class="pd-size-btn pd-size-btn--active" data-size="{{ $product->age_group ?? 'Standard' }}">{{ $product->age_group ?? 'Standard' }}</button>
-                        @endif
-                    </div>
-                </div>
+
+                </div><!-- /.pd-color-size-row -->
 
                 <form action="{{ route('cart.add') }}" method="POST">
                     @csrf

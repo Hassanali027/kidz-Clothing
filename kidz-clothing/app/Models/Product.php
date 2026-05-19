@@ -14,6 +14,7 @@ class Product extends Model
         'name',
         'slug',
         'category',
+        'product_type',
         'age_group',
         'price',
         'sale_price',

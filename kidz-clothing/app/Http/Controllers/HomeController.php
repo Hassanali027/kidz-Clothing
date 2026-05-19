@@ -42,21 +42,25 @@ class HomeController extends Controller
             'boys' => Product::where('status', 'active')
                 ->where('category', 'LIKE', '%boys%')
                 ->whereJsonContains('display_sections', 'shop_by_category')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             'girls' => Product::where('status', 'active')
                 ->where('category', 'LIKE', '%girls%')
                 ->whereJsonContains('display_sections', 'shop_by_category')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             'baby' => Product::where('status', 'active')
                 ->where('category', 'LIKE', '%baby%')
                 ->whereJsonContains('display_sections', 'shop_by_category')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             'party' => Product::where('status', 'active')
                 ->where('category', 'LIKE', '%party%')
                 ->whereJsonContains('display_sections', 'shop_by_category')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
         ];
@@ -65,21 +69,25 @@ class HomeController extends Controller
             '0-2' => Product::where('status', 'active')
                 ->where('age_group', '0-2')
                 ->whereJsonContains('display_sections', 'shop_by_age')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             '2-5' => Product::where('status', 'active')
                 ->where('age_group', '2-5')
                 ->whereJsonContains('display_sections', 'shop_by_age')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             '5-8' => Product::where('status', 'active')
                 ->where('age_group', '5-8')
                 ->whereJsonContains('display_sections', 'shop_by_age')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
             '8-14' => Product::where('status', 'active')
                 ->where('age_group', '8-14')
                 ->whereJsonContains('display_sections', 'shop_by_age')
+                ->orderBy('updated_at', 'desc')
                 ->take(3)
                 ->get(),
         ];

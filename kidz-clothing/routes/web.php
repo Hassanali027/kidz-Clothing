@@ -110,6 +110,28 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::get('/password', [AdminController::class, 'password'])->name('password');
 });
 
+// Policy Pages
+Route::get('/exchange-policy', function () {
+    return view('exchange-policy', [
+        'pageTitle'       => 'Exchange Policy | Kidz Wear',
+        'metaDescription' => 'Read Kidz Wear\'s Exchange Policy. Learn how to exchange kids clothing items quickly and easily.',
+    ]);
+})->name('exchange.policy');
+
+Route::get('/refund-policy', function () {
+    return view('refund-policy', [
+        'pageTitle'       => 'Refund Policy | Kidz Wear',
+        'metaDescription' => 'Read Kidz Wear\'s Refund Policy. Understand how refunds are processed and what items are eligible.',
+    ]);
+})->name('refund.policy');
+
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy', [
+        'pageTitle'       => 'Privacy Policy | Kidz Wear',
+        'metaDescription' => 'Kidz Wear\'s Privacy Policy — how we collect, use, and protect your personal information.',
+    ]);
+})->name('privacy.policy');
+
 // Category Slug Route (MUST BE LAST - Catch-all route)
 Route::get('/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 

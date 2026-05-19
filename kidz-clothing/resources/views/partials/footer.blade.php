@@ -31,9 +31,9 @@
                 <h4 class="ftr-col-heading">Company</h4>
                 <ul class="ftr-links">
                     <li><a href="{{ route('about') }}">About</a></li>
-                    <li><a href="#">Exchange Policy</a></li>
-                    <li><a href="#">Refund policy</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="{{ route('exchange.policy') }}">Exchange Policy</a></li>
+                    <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
+                    <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
                     <li><a href="{{ route('faqs') }}">FAQS</a></li>
                 </ul>
             </div>

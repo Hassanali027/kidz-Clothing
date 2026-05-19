@@ -192,20 +192,20 @@
 
             <!-- Left Promo Card -->
             <a href="{{ route('products.index') }}" class="na-promo" style="text-decoration:none;">
+                <div class="na-promo-img">
+                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="New Arrivals">
+                </div>
                 <div class="na-promo-text">
                     <h3 class="na-promo-title">New Arrivals</h3>
                     <p class="na-promo-desc">Discover our latest stylish kidswear.</p>
                     <span class="na-promo-btn">Shop Now</span>
-                </div>
-                <div class="na-promo-img">
-                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="New Arrivals">
                 </div>
             </a>
 
             <!-- Right Product Cards (Desktop - 3 cards) -->
             <div class="na-right">
                 <div class="na-right-header">
-                    <a href="#" class="na-view-all">View All</a>
+                    <a href="{{ route('categories.index') }}" class="na-view-all">View All</a>
                 </div>
                 <div class="na-grid">
                     @forelse($newArrivals->take(3) as $product)
@@ -266,7 +266,7 @@
 
             <div class="na-mobile-actions">
                 <a href="{{ route('products.index') }}" class="na-mobile-btn na-mobile-btn--primary">Shop Now</a>
-                <a href="{{ route('products.index') }}" class="na-mobile-btn na-mobile-btn--secondary">View All</a>
+                <a href="{{ route('categories.index') }}" class="na-mobile-btn na-mobile-btn--secondary">View All</a>
             </div>
         </div>
 
@@ -298,7 +298,7 @@
         <div class="cta-content">
             <h2 class="cta-title">Summer Sale</h2>
             <p class="cta-subtitle">Up to 50% Off on Kids Collection</p>
-            <a href="#" class="cta-btn" id="cta-shop-now">Shop Now</a>
+            <a href="{{ route('categories.index') }}" class="cta-btn" id="cta-shop-now">Shop Now</a>
         </div>
     </section>
 

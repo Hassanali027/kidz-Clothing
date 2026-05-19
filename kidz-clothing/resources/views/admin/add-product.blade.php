@@ -66,6 +66,21 @@
 
             <div class="form-row">
                 <div class="form-group">
+                    <label>Product Type (Optional)</label>
+                    <select name="product_type" class="form-control js-product-type-select">
+                        <option value="">Select Product Type</option>
+                        @foreach(($productTypes ?? collect()) as $productType)
+                            <option value="{{ $productType }}" {{ old('product_type') == $productType ? 'selected' : '' }}>{{ $productType }}</option>
+                        @endforeach
+                        <option value="__custom" {{ old('product_type') == '__custom' ? 'selected' : '' }}>Add custom type</option>
+                    </select>
+                    <input type="text" name="product_type_custom" class="form-control js-product-type-custom" placeholder="Enter custom product type" value="{{ old('product_type_custom') }}" style="display:none; margin-top:10px;">
+                    <small style="color: #666;">Connects with front-end filters. Custom types appear automatically after saving a product.</small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
                     <label>Price (Rs.)</label>
                     <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" value="{{ old('price') }}" required>
                 </div>
@@ -281,6 +296,25 @@
 
             <script>
             document.addEventListener('DOMContentLoaded', function() {
+                const productTypeSelect = document.querySelector('.js-product-type-select');
+                const customProductType = document.querySelector('.js-product-type-custom');
+
+                function toggleCustomProductType() {
+                    if (!productTypeSelect || !customProductType) return;
+
+                    const isCustom = productTypeSelect.value === '__custom';
+                    customProductType.style.display = isCustom ? 'block' : 'none';
+                    customProductType.required = isCustom;
+                    if (isCustom) {
+                        customProductType.focus();
+                    }
+                }
+
+                if (productTypeSelect) {
+                    productTypeSelect.addEventListener('change', toggleCustomProductType);
+                    toggleCustomProductType();
+                }
+
                 const searchInput = document.getElementById('relatedProductSearch');
                 const dropdownPanel = document.getElementById('dropdownPanel');
                 const displayBox = document.getElementById('selectedProductsDisplay');

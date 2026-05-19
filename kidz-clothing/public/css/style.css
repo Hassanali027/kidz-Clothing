@@ -323,17 +323,31 @@ body {
 /* Label at bottom-left */
 .category-label {
     position: absolute;
-    bottom: 18px;
-    left: 16px;
+    bottom: 22px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 18px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease;
 }
 
 .category-label span {
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 600;
-    color: #000;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    letter-spacing: 0.2px;
+    color: #111;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    display: inline-block;
+}
+
+.category-card:hover .category-label {
+    transform: translateY(-4px);
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 /* ═══════════════════════════════════════
@@ -430,17 +444,19 @@ body {
 }
 
 .fp-card-img-wrap {
-    background: #f0f0f0;
+    background: #fff;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    aspect-ratio: 4 / 5;
+    width: 100%;
 }
 
 .fp-card-img-wrap img {
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
     display: block;
     transition: transform 0.4s ease;
 }
@@ -499,13 +515,32 @@ body {
     flex: 0 0 270px;
     background: #f5f5f0;
     border-radius: 16px;
-    padding: 28px 20px 0;
+    padding: 0 0 28px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 400px;
     text-align: center;
+}
+
+.na-promo-img {
+    width: 100%;
+    overflow: hidden;
+    background: #f5f5f5;
+    margin-bottom: 20px;
+}
+
+.na-promo-img img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.na-promo-text {
+    padding: 0 20px;
 }
 
 .na-promo-title {
@@ -531,29 +566,11 @@ body {
     font-weight: 600;
     border-radius: 25px;
     text-decoration: none;
-    margin-bottom: 20px;
     transition: background 0.2s;
 }
 
 .na-promo-btn:hover {
     background: #0288d1;
-}
-
-.na-promo-img {
-    margin-top: auto;
-    width: 100%;
-    overflow: hidden;
-    border-radius: 12px;
-    background: #f5f5f5;
-}
-
-.na-promo-img img {
-    width: 100%;
-    height: 320px;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    border-radius: 12px;
 }
 
 /* Right Side */
@@ -683,11 +700,47 @@ body {
     .fp-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+        align-items: stretch;
+    }
+
+    .fp-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fp-card-img-wrap {
+        aspect-ratio: 1 / 1.25;
+        flex-shrink: 0;
     }
 
     .fp-card-img-wrap img {
-        height: auto !important;
+        height: 100% !important;
         object-fit: cover !important;
+        object-position: center top;
+    }
+
+    .fp-card-info {
+        min-height: 58px;
+        padding: 9px 10px 11px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex: 1;
+    }
+
+    .fp-card-name {
+        min-height: 18px;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fp-card-price {
+        min-height: 18px;
+        flex-wrap: wrap;
+        row-gap: 2px;
     }
 
     /* Hide desktop New Arrivals layout on mobile */
@@ -728,11 +781,16 @@ body {
     .na-mobile-grid .na-card {
         border-radius: 8px;
         overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
     .na-mobile-grid .na-card-img-wrap {
         border-radius: 0;
-        height: 280px !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1.18;
+        flex-shrink: 0;
         overflow: hidden;
         background: #f5f5f5;
         display: flex;
@@ -743,9 +801,24 @@ body {
     .na-mobile-grid .na-card-img-wrap img {
         width: 100%;
         height: 100%;
-        object-fit: contain !important;
-        object-position: center;
+        object-fit: cover !important;
+        object-position: center top;
         border-radius: 0;
+    }
+
+    .na-mobile-grid .na-card-name {
+        min-height: 18px;
+        padding: 10px 10px 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .na-mobile-grid .na-card-price {
+        min-height: 30px;
+        padding: 0 10px 10px;
+        flex-wrap: wrap;
+        row-gap: 2px;
     }
 
     /* Mobile action buttons */
@@ -1002,8 +1075,11 @@ body {
     .sba-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: auto;
         gap: 12px;
         padding: 0;
+        align-items: stretch;
     }
 
     .category-grid {
@@ -1017,18 +1093,24 @@ body {
 
     .sba-card {
         border-radius: 12px;
-        height: 280px;
+        height: auto;
+        aspect-ratio: 1 / 1.25;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
         overflow: hidden;
         background: #f5f5f5;
         position: relative;
         display: block;
+        padding: 0;
     }
 
     .sba-card img {
         width: 100%;
+        min-width: 0;
         height: 100%;
         object-fit: cover;
-        object-position: center;
+        object-position: center top;
         border-radius: 12px;
         display: block;
     }
@@ -1789,16 +1871,19 @@ body {
 }
 
 .mob-submenu.mob-sub-open {
-    display: block;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 10px;
 }
 
 .mob-submenu li a {
     display: block;
-    padding: 10px 20px 10px 32px;
+    padding: 10px 8px 10px 32px;
     font-size: 13px;
     color: #000;
     text-decoration: none;
     transition: color 0.2s;
+    line-height: 1.3;
 }
 
 .mob-submenu li a:hover {
@@ -5589,5 +5674,103 @@ margin-bottom: 28px;
     .bl-grid {
         grid-template-columns: 1fr;
         padding: 0;
+    }
+}
+
+/* ── Global Slide-Down Search Bar ── */
+.search-overlay {
+    position: fixed;
+    top: -120px;
+    /* Start hidden above screen */
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    z-index: 9999;
+    transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.search-overlay--open {
+    top: 0;
+}
+
+.search-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-input-wrap {
+    display: flex;
+    align-items: center;
+    background: #f7f7f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.search-input-wrap:focus-within {
+    background: #fff;
+    border-color: #ff527b;
+    /* Premium pink/red brand color */
+    box-shadow: 0 0 0 4px rgba(255, 82, 123, 0.1);
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.6;
+    margin-right: 14px;
+}
+
+#global-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-family: 'Outfit', sans-serif;
+    color: #1e293b;
+    outline: none;
+}
+
+#global-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.search-close-btn {
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #64748b;
+    cursor: pointer;
+    margin-left: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.search-close-btn:hover {
+    color: #ff527b;
+}
+
+@media (max-width: 768px) {
+    .search-overlay {
+        height: 80px;
+    }
+
+    .search-input-wrap {
+        padding: 8px 18px;
+    }
+
+    #global-search-input {
+        font-size: 14px;
     }
 }

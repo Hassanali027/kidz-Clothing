@@ -156,7 +156,8 @@ class AdminController extends Controller
         $categories = Category::where('status', 'active')->orderBy('order', 'asc')->orderBy('name', 'asc')->get();
         return view('admin.add-product', [
             'pageTitle' => 'Add New Product',
-            'categories' => $categories
+            'categories' => $categories,
+            'productTypes' => $this->getProductTypes()
         ]);
     }
 
@@ -166,6 +167,8 @@ class AdminController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'category' => 'required|string',
+                'product_type' => 'nullable|string|max:255',
+                'product_type_custom' => 'nullable|string|max:255',
                 'age_group' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'sale_price' => 'nullable|numeric|min:0',
@@ -177,6 +180,7 @@ class AdminController extends Controller
                 'size' => 'nullable|string|max:255'
             ]);
 
+            $productType = $this->resolveProductType($request);
             $images = [];
             if ($request->hasFile('product_images')) {
                 $uploadPath = public_path('images/products');
@@ -191,9 +195,34 @@ class AdminController extends Controller
                 }
             }
 
+            $displaySections = $request->display_sections ?? [];
+
+            // If new product has shop_by_category selected, clear it from other products in the same category
+            if (in_array('shop_by_category', $displaySections)) {
+                $otherProducts = Product::where('category', $request->category)
+                    ->whereJsonContains('display_sections', 'shop_by_category')
+                    ->get();
+                foreach ($otherProducts as $op) {
+                    $sections = array_diff($op->display_sections ?? [], ['shop_by_category']);
+                    $op->update(['display_sections' => array_values($sections)]);
+                }
+            }
+
+            // If new product has shop_by_age selected, clear it from other products in the same age group
+            if (in_array('shop_by_age', $displaySections)) {
+                $otherProducts = Product::where('age_group', $request->age_group)
+                    ->whereJsonContains('display_sections', 'shop_by_age')
+                    ->get();
+                foreach ($otherProducts as $op) {
+                    $sections = array_diff($op->display_sections ?? [], ['shop_by_age']);
+                    $op->update(['display_sections' => array_values($sections)]);
+                }
+            }
+
             $product = Product::create([
                 'name' => $request->name,
                 'category' => $request->category,
+                'product_type' => $productType,
                 'age_group' => $request->age_group,
                 'price' => $request->price,
                 'sale_price' => $request->sale_price,
@@ -201,7 +230,7 @@ class AdminController extends Controller
                 'images' => $images,
                 'stock_quantity' => $request->stock_quantity,
                 'status' => $request->status,
-                'display_sections' => $request->display_sections ?? [],
+                'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
                 'size' => $request->size
@@ -222,7 +251,8 @@ class AdminController extends Controller
         return view('admin.edit-product', [
             'pageTitle' => 'Edit Product',
             'product' => $product,
-            'categories' => $categories
+            'categories' => $categories,
+            'productTypes' => $this->getProductTypes()
         ]);
     }
 
@@ -234,6 +264,8 @@ class AdminController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'category' => 'required|string',
+                'product_type' => 'nullable|string|max:255',
+                'product_type_custom' => 'nullable|string|max:255',
                 'age_group' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'sale_price' => 'nullable|numeric|min:0',
@@ -245,7 +277,23 @@ class AdminController extends Controller
                 'size' => 'nullable|string|max:255'
             ]);
 
+            $productType = $this->resolveProductType($request);
             $images = $product->images ?? [];
+
+            // Handle removed images
+            if ($request->has('removed_images') && is_array($request->removed_images)) {
+                foreach ($request->removed_images as $removedImage) {
+                    if (($key = array_search($removedImage, $images)) !== false) {
+                        unset($images[$key]);
+                    }
+                    
+                    $filePath = public_path($removedImage);
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
+                    }
+                }
+                $images = array_values($images);
+            }
             
             if ($request->hasFile('product_images')) {
                 $uploadPath = public_path('images/products');
@@ -260,9 +308,36 @@ class AdminController extends Controller
                 }
             }
 
+            $displaySections = $request->display_sections ?? [];
+
+            // If updated product has shop_by_category selected, clear it from other products in the same category
+            if (in_array('shop_by_category', $displaySections)) {
+                $otherProducts = Product::where('id', '!=', $id)
+                    ->where('category', $request->category)
+                    ->whereJsonContains('display_sections', 'shop_by_category')
+                    ->get();
+                foreach ($otherProducts as $op) {
+                    $sections = array_diff($op->display_sections ?? [], ['shop_by_category']);
+                    $op->update(['display_sections' => array_values($sections)]);
+                }
+            }
+
+            // If updated product has shop_by_age selected, clear it from other products in the same age group
+            if (in_array('shop_by_age', $displaySections)) {
+                $otherProducts = Product::where('id', '!=', $id)
+                    ->where('age_group', $request->age_group)
+                    ->whereJsonContains('display_sections', 'shop_by_age')
+                    ->get();
+                foreach ($otherProducts as $op) {
+                    $sections = array_diff($op->display_sections ?? [], ['shop_by_age']);
+                    $op->update(['display_sections' => array_values($sections)]);
+                }
+            }
+
             $product->update([
                 'name' => $request->name,
                 'category' => $request->category,
+                'product_type' => $productType,
                 'age_group' => $request->age_group,
                 'price' => $request->price,
                 'sale_price' => $request->sale_price,
@@ -270,7 +345,7 @@ class AdminController extends Controller
                 'images' => $images,
                 'stock_quantity' => $request->stock_quantity,
                 'status' => $request->status,
-                'display_sections' => $request->display_sections ?? [],
+                'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
                 'size' => $request->size
@@ -503,5 +578,41 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
+    }
+
+    private function resolveProductType(Request $request)
+    {
+        $customType = trim((string) $request->input('product_type_custom'));
+
+        if ($customType !== '') {
+            return $customType;
+        }
+
+        $selectedType = $request->input('product_type');
+
+        return $selectedType === '__custom' ? null : $selectedType;
+    }
+
+    private function getProductTypes()
+    {
+        $defaultTypes = collect([
+            'Casual Shirts',
+            'T-Shirts',
+            'Trousers',
+            'Shorts',
+            'Frocks',
+            'Dresses',
+            'Shalwar Kameez',
+            'Jogger Sets',
+            'Jackets',
+            'Sweaters',
+        ]);
+
+        $assignedTypes = Product::pluck('product_type')
+            ->filter(function ($type) {
+                return trim((string) $type) !== '';
+            });
+
+        return $defaultTypes->merge($assignedTypes)->unique()->values();
     }
 }

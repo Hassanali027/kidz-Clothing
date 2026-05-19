@@ -89,7 +89,7 @@
 /* Pagination */
 .cp-pagination { display:flex; justify-content:center; gap:8px; margin-top:40px; }
 .cp-page-btn { padding:8px 16px; border:1.5px solid #ddd; border-radius:6px; background:#fff; font-family:'Outfit',sans-serif; font-size:14px; color:#555; cursor:pointer; transition:border-color 0.2s,background 0.2s,color 0.2s; }
-.cp-page-btn:hover { border-color:#f06292; color:#f06292; }
+.cp-page-btn:hover { border-color:#f06292; color:#fff; }
 .cp-page-btn--active { background:#f06292; border-color:#f06292; color:#fff; font-weight:700; }
 .cp-page-next { padding:8px 20px; }
 /* Responsive */

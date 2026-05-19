@@ -65,6 +65,21 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Product Type (Optional)</label>
+                    <select name="product_type" class="form-control js-product-type-select">
+                        <option value="">Select Product Type</option>
+                        @foreach(($productTypes ?? collect()) as $productType)
+                            <option value="{{ $productType }}" {{ old('product_type', $product->product_type ?? '') == $productType ? 'selected' : '' }}>{{ $productType }}</option>
+                        @endforeach
+                        <option value="__custom" {{ old('product_type') == '__custom' ? 'selected' : '' }}>Add custom type</option>
+                    </select>
+                    <input type="text" name="product_type_custom" class="form-control js-product-type-custom" placeholder="Enter custom product type" value="{{ old('product_type_custom') }}" style="display:none; margin-top:10px;">
+                    <small style="color: #666;">Connects with front-end filters. Custom types appear automatically after saving a product.</small>
+                </div>
+            </div>
+
 
             <div class="form-row">
                 <div class="form-group">
@@ -97,13 +112,15 @@
             @if($product->images && count($product->images) > 0)
             <div class="form-group">
                 <label>Current Images</label>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;">
                     @foreach($product->images as $image)
-                        <div style="position: relative;">
+                        <div class="image-preview-container" style="position: relative; display: inline-block;">
                             <img src="{{ asset($image) }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0;">
+                            <button type="button" class="remove-img-btn" data-image="{{ $image }}" style="position: absolute; top: -6px; right: -6px; background: #e53e3e; color: white; border: none; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); font-weight: bold; transition: background 0.2s;">✕</button>
                         </div>
                     @endforeach
                 </div>
+                <div id="removedImagesContainer"></div>
             </div>
             @endif
 
@@ -305,6 +322,25 @@
 
             <script>
             document.addEventListener('DOMContentLoaded', function() {
+                const productTypeSelect = document.querySelector('.js-product-type-select');
+                const customProductType = document.querySelector('.js-product-type-custom');
+
+                function toggleCustomProductType() {
+                    if (!productTypeSelect || !customProductType) return;
+
+                    const isCustom = productTypeSelect.value === '__custom';
+                    customProductType.style.display = isCustom ? 'block' : 'none';
+                    customProductType.required = isCustom;
+                    if (isCustom) {
+                        customProductType.focus();
+                    }
+                }
+
+                if (productTypeSelect) {
+                    productTypeSelect.addEventListener('change', toggleCustomProductType);
+                    toggleCustomProductType();
+                }
+
                 const searchInput = document.getElementById('relatedProductSearch');
                 const dropdownPanel = document.getElementById('dropdownPanel');
                 const displayBox = document.getElementById('selectedProductsDisplay');
@@ -432,6 +468,33 @@
                     updateProductItems();
                     updateHiddenInput();
                 };
+
+                // Remove existing image handler
+                document.querySelectorAll('.remove-img-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var imagePath = this.getAttribute('data-image');
+                        var container = this.closest('.image-preview-container');
+                        
+                        // Add hidden input to notify backend to delete this image
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'removed_images[]';
+                        input.value = imagePath;
+                        
+                        var containerElement = document.getElementById('removedImagesContainer');
+                        if (containerElement) {
+                            containerElement.appendChild(input);
+                        }
+                        
+                        // Apply animation and remove from DOM
+                        container.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                        container.style.opacity = '0';
+                        container.style.transform = 'scale(0.8)';
+                        setTimeout(function() {
+                            container.remove();
+                        }, 250);
+                    });
+                });
             });
             </script>
 

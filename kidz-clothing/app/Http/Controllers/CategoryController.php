@@ -20,12 +20,22 @@ class CategoryController extends Controller
 
         $products = null;
         $activeSize = $request->query('size');
+        $search = $request->query('search');
+        $productType = $request->query('product_type');
 
-        // If a size filter is requested, we show products instead of just categories
-        if ($activeSize) {
-            $products = Product::where('status', 'active')
-                ->orderBy('created_at', 'desc')
-                ->get();
+        // If a size filter or search query is requested, we show products instead of just categories
+        if ($activeSize || $search || $productType) {
+            $productsQuery = Product::where('status', 'active');
+
+            if ($productType) {
+                $productsQuery->where('product_type', $productType);
+            }
+
+            $products = $productsQuery->orderBy('created_at', 'desc')->get();
+
+            if ($productType && $products->isEmpty()) {
+                $products = null;
+            }
             
             // Note: In a real app, you would filter by size here in the query
             // $products = $products->where('size', $activeSize);
@@ -36,15 +46,17 @@ class CategoryController extends Controller
             'metaDescription' => 'Browse all kids clothing categories at Kidz Wear – Boys, Girls, Baby, Party Wear and more.',
             'categories'      => $categories,
             'products'        => $products,
+            'productTypes'    => $this->getProductTypes(),
             'categorySlug'    => null,
             'activeSize'      => $activeSize,
+            'activeProductType' => $productType,
         ]);
     }
 
     /**
      * Show products filtered by a specific category slug.
      */
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         // Find category by slug
         $category = Category::where('slug', $slug)
@@ -57,11 +69,69 @@ class CategoryController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        // Get products for this category
-        $products = Product::where('category', $category->name)
-            ->where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get filters from request
+        $sizeFilter = $request->query('size');
+        $productType = $request->query('product_type');
+        $minPrice = $request->query('min_price', 0);
+        $maxPrice = $request->query('max_price', 10000);
+
+        // Build products query
+        $productsQuery = Product::where('category', $category->name)
+            ->where('status', 'active');
+
+        // Apply size filter if provided
+        if ($sizeFilter) {
+            $productsQuery->where('age_group', $sizeFilter);
+        }
+
+        if ($productType) {
+            $productsQuery->where('product_type', $productType);
+        }
+
+        // Apply price filter
+        $productsQuery->where(function($query) use ($minPrice, $maxPrice) {
+            $query->whereBetween('price', [$minPrice, $maxPrice])
+                  ->orWhereBetween('sale_price', [$minPrice, $maxPrice]);
+        });
+
+        $products = $productsQuery->orderBy('created_at', 'desc')->get();
+        $productTypes = $this->getProductTypes();
+
+        // Database diagnostics log
+        try {
+            $diagnostics = [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'requested_slug' => $slug,
+                'size_filter' => $sizeFilter,
+                'price_range' => ['min' => $minPrice, 'max' => $maxPrice],
+                'resolved_category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'status' => $category->status,
+                ],
+                'unique_product_categories' => Product::select('category')->distinct()->pluck('category')->toArray(),
+                'all_products_count' => Product::count(),
+                'active_products_count' => Product::where('status', 'active')->count(),
+                'matched_products_count' => count($products),
+                'matched_products' => $products->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'price' => $p->price,
+                        'sale_price' => $p->sale_price,
+                        'status' => $p->status,
+                        'stock' => $p->stock_quantity,
+                        'category' => $p->category,
+                        'age_group' => $p->age_group,
+                        'product_type' => $p->product_type,
+                    ];
+                })->toArray(),
+            ];
+            file_put_contents(public_path('diagnostics.json'), json_encode($diagnostics, JSON_PRETTY_PRINT));
+        } catch (\Exception $e) {
+            // ignore
+        }
 
         return view('Category-Page', [
             'pageTitle'       => $category->name . ' | Kidz Wear',
@@ -71,6 +141,38 @@ class CategoryController extends Controller
             'categoryName'    => $category->name,
             'categories'      => $categories,
             'products'        => $products,
+            'productTypes'    => $productTypes,
+            'activeSize'      => $sizeFilter,
+            'activeProductType' => $productType,
+            'minPrice'        => $minPrice,
+            'maxPrice'        => $maxPrice,
         ]);
+    }
+
+    private function getProductTypes()
+    {
+        $defaultTypes = collect([
+            'Casual Shirts',
+            'T-Shirts',
+            'Trousers',
+            'Shorts',
+            'Frocks',
+            'Dresses',
+            'Shalwar Kameez',
+            'Jogger Sets',
+            'Jackets',
+            'Sweaters',
+        ]);
+
+        $assignedTypes = Product::where('status', 'active')
+            ->pluck('product_type')
+            ->filter(function ($type) {
+                return trim((string) $type) !== '';
+            });
+
+        return $defaultTypes
+            ->merge($assignedTypes)
+            ->unique()
+            ->values();
     }
 }
