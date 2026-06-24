@@ -104,7 +104,55 @@
 
     <div class="content-card" style="margin-bottom: 20px;">
         <div class="card-header">
-            <h2>CTA Banner (Summer Sale)</h2>
+            <h2>1st Banner (Before Featured Products)</h2>
+            <small style="color: #666;">This banner appears above the Featured Products section.</small>
+        </div>
+        <form action="{{ route('admin.home.updateBanner') }}" method="POST" enctype="multipart/form-data" class="admin-form">
+            @csrf
+            <input type="hidden" name="banner_type" value="pre_featured">
+            
+            <div class="form-group">
+                <label>Current Banner</label>
+                <div style="margin-bottom: 15px;">
+                    <img src="{{ asset($preFeaturedBanner) }}?v={{ time() }}" alt="1st Banner" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Upload New Banner Image</label>
+                <input type="file" name="banner_image" class="form-control" accept="image/*">
+                <small style="color: #666; font-size: 13px;">Leave empty to keep the current image. Recommended size: 1920x400px</small>
+            </div>
+
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" value="{{ $preFeaturedTitle }}">
+            </div>
+
+            <div class="form-group">
+                <label>Subtitle</label>
+                <input type="text" name="subtitle" class="form-control" value="{{ $preFeaturedSubtitle }}">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label>Button Text</label>
+                    <input type="text" name="button_text" class="form-control" value="{{ $preFeaturedBtnText }}">
+                </div>
+                <div style="flex: 1;">
+                    <label>Button Link</label>
+                    <input type="text" name="button_link" class="form-control" value="{{ $preFeaturedBtnLink }}">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary">Update 1st Banner</button>
+        </form>
+    </div>
+
+    <div class="content-card" style="margin-bottom: 20px;">
+        <div class="card-header">
+            <h2>2nd Banner (CTA Banner)</h2>
+            <small style="color: #666;">This banner appears below the New Arrivals section.</small>
         </div>
         <form action="{{ route('admin.home.updateBanner') }}" method="POST" enctype="multipart/form-data" class="admin-form">
             @csrf
@@ -113,17 +161,38 @@
             <div class="form-group">
                 <label>Current Banner</label>
                 <div style="margin-bottom: 15px;">
-                    <img src="{{ asset($ctaBanner) }}?v={{ time() }}" alt="CTA Banner" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                    <img src="{{ asset($ctaBanner) }}?v={{ time() }}" alt="2nd Banner (CTA)" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Upload New Banner Image</label>
-                <input type="file" name="banner_image" class="form-control" accept="image/*" required>
-                <small style="color: #666; font-size: 13px;">Recommended size: 1920x400px (JPG, PNG, GIF, WEBP - Max 5MB)</small>
+                <input type="file" name="banner_image" class="form-control" accept="image/*">
+                <small style="color: #666; font-size: 13px;">Leave empty to keep the current image. Recommended size: 1920x400px</small>
+            </div>
+
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" value="{{ $ctaTitle }}">
+            </div>
+
+            <div class="form-group">
+                <label>Subtitle</label>
+                <input type="text" name="subtitle" class="form-control" value="{{ $ctaSubtitle }}">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label>Button Text</label>
+                    <input type="text" name="button_text" class="form-control" value="{{ $ctaBtnText }}">
+                </div>
+                <div style="flex: 1;">
+                    <label>Button Link</label>
+                    <input type="text" name="button_link" class="form-control" value="{{ $ctaBtnLink }}">
+                </div>
             </div>
             
-            <button type="submit" class="btn-primary">Update CTA Banner</button>
+            <button type="submit" class="btn-primary">Update 2nd Banner</button>
         </form>
     </div>
 

@@ -69,7 +69,18 @@ class AdminController extends Controller
         $heroBanner2 = SiteSetting::get('hero_2_banner', 'images/img-home/hero-banner.jpg');
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
         $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
+        $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
         
+        $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
+        $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');
+        $preFeaturedBtnText = SiteSetting::get('pre_featured_button_text', 'Shop Now');
+        $preFeaturedBtnLink = SiteSetting::get('pre_featured_button_link', route('categories.index'));
+
+        $ctaTitle = SiteSetting::get('cta_title', 'Summer Sale');
+        $ctaSubtitle = SiteSetting::get('cta_subtitle', 'Up to 50% Off on Kids Collection');
+        $ctaBtnText = SiteSetting::get('cta_button_text', 'Shop Now');
+        $ctaBtnLink = SiteSetting::get('cta_button_link', route('categories.index'));
+
         $seoTitle = SiteSetting::get('home_seo_title', 'Kidz Wear - Kids Clothing Store');
         $seoDescription = SiteSetting::get('home_seo_description', 'Kidz Wear - Premium Kids Clothing Collection. Shop the latest trends for your little ones.');
 
@@ -92,6 +103,15 @@ class AdminController extends Controller
             'heroBanner2' => $heroBanner2,
             'heroBanner3' => $heroBanner3,
             'ctaBanner' => $ctaBanner,
+            'preFeaturedBanner' => $preFeaturedBanner,
+            'preFeaturedTitle' => $preFeaturedTitle,
+            'preFeaturedSubtitle' => $preFeaturedSubtitle,
+            'preFeaturedBtnText' => $preFeaturedBtnText,
+            'preFeaturedBtnLink' => $preFeaturedBtnLink,
+            'ctaTitle' => $ctaTitle,
+            'ctaSubtitle' => $ctaSubtitle,
+            'ctaBtnText' => $ctaBtnText,
+            'ctaBtnLink' => $ctaBtnLink,
             'categoryImages' => $categoryImages,
             'seoTitle' => $seoTitle,
             'seoDescription' => $seoDescription,
@@ -106,8 +126,12 @@ class AdminController extends Controller
     {
         try {
             $request->validate([
-                'banner_type' => 'required|in:hero,hero_1,hero_2,hero_3,cta,category_boys,category_girls,category_baby,category_party',
-                'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+                'banner_type' => 'required|in:hero,hero_1,hero_2,hero_3,cta,pre_featured,category_boys,category_girls,category_baby,category_party',
+                'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'title' => 'nullable|string|max:255',
+                'subtitle' => 'nullable|string|max:255',
+                'button_text' => 'nullable|string|max:255',
+                'button_link' => 'nullable|string|max:255',
             ]);
 
             $bannerType = $request->banner_type;
@@ -118,6 +142,19 @@ class AdminController extends Controller
                 $key = $bannerType;
             } else {
                 $key = $bannerType . '_banner';
+            }
+
+            if ($request->has('title')) {
+                SiteSetting::set($bannerType.'_title', $request->title);
+            }
+            if ($request->has('subtitle')) {
+                SiteSetting::set($bannerType.'_subtitle', $request->subtitle);
+            }
+            if ($request->has('button_text')) {
+                SiteSetting::set($bannerType.'_button_text', $request->button_text);
+            }
+            if ($request->has('button_link')) {
+                SiteSetting::set($bannerType.'_button_link', $request->button_link);
             }
 
             if ($request->hasFile('banner_image')) {
@@ -142,13 +179,12 @@ class AdminController extends Controller
                         'file' => $imageName,
                         'path' => 'images/banners/' . $imageName
                     ]);
-
-                    $displayName = ucfirst(str_replace('_', ' ', $bannerType));
-                    return redirect()->route('admin.home')->with('success', $displayName . ' image updated successfully!');
                 }
             }
 
-            return redirect()->route('admin.home')->with('error', 'Failed to upload image. No file received.');
+            $displayName = ucfirst(str_replace('_', ' ', $bannerType));
+            return redirect()->route('admin.home')->with('success', $displayName . ' updated successfully!');
+            
             
         } catch (\Exception $e) {
             \Log::error('Banner update error: ' . $e->getMessage());

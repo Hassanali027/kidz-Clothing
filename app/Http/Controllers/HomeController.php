@@ -20,6 +20,17 @@ class HomeController extends Controller
         $heroBanner2 = SiteSetting::get('hero_2_banner', 'images/img-home/hero-banner.jpg');
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
         $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
+        $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
+        
+        $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
+        $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');
+        $preFeaturedBtnText = SiteSetting::get('pre_featured_button_text', 'Shop Now');
+        $preFeaturedBtnLink = SiteSetting::get('pre_featured_button_link', route('categories.index'));
+
+        $ctaTitle = SiteSetting::get('cta_title', 'Summer Sale');
+        $ctaSubtitle = SiteSetting::get('cta_subtitle', 'Up to 50% Off on Kids Collection');
+        $ctaBtnText = SiteSetting::get('cta_button_text', 'Shop Now');
+        $ctaBtnLink = SiteSetting::get('cta_button_link', route('categories.index'));
 
         // Category images
         $categoryImages = [
@@ -107,6 +118,15 @@ class HomeController extends Controller
             'heroBanner2' => $heroBanner2,
             'heroBanner3' => $heroBanner3,
             'ctaBanner' => $ctaBanner,
+            'preFeaturedBanner' => $preFeaturedBanner,
+            'preFeaturedTitle' => $preFeaturedTitle,
+            'preFeaturedSubtitle' => $preFeaturedSubtitle,
+            'preFeaturedBtnText' => $preFeaturedBtnText,
+            'preFeaturedBtnLink' => $preFeaturedBtnLink,
+            'ctaTitle' => $ctaTitle,
+            'ctaSubtitle' => $ctaSubtitle,
+            'ctaBtnText' => $ctaBtnText,
+            'ctaBtnLink' => $ctaBtnLink,
             'categoryImages' => $categoryImages,
             'featuredProducts' => $featuredProducts,
             'newArrivals' => $newArrivals,

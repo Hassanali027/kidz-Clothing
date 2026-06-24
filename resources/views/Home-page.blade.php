@@ -205,6 +205,19 @@
     </section>
 
     <!-- ════════════════════════════════
+         Pre-Featured Banner Section
+    ════════════════════════════════ -->
+    <section class="cta-section" style="margin-bottom: 40px;">
+        <img src="{{ asset($preFeaturedBanner ?? 'images/img-home/home-cta.jpg') }}" alt="{{ $preFeaturedTitle ?? 'Summer Sale' }}" class="cta-bg-img">
+        <div class="cta-overlay"></div>
+        <div class="cta-content">
+            <h2 class="cta-title">{{ $preFeaturedTitle ?? 'Summer Sale' }}</h2>
+            <p class="cta-subtitle">{{ $preFeaturedSubtitle ?? 'Up to 50% Off on Kids Collection' }}</p>
+            <a href="{{ $preFeaturedBtnLink ?? route('categories.index') }}" class="cta-btn">{{ $preFeaturedBtnText ?? 'Shop Now' }}</a>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════
          Featured Products Section
     ════════════════════════════════ -->
     <section class="fp-section">
@@ -456,12 +469,12 @@
          CTA Banner Section
     ════════════════════════════════ -->
     <section class="cta-section">
-        <img src="{{ asset($ctaBanner ?? 'images/img-home/home-cta.jpg') }}" alt="Summer Sale" class="cta-bg-img">
+        <img src="{{ asset($ctaBanner ?? 'images/img-home/home-cta.jpg') }}" alt="{{ $ctaTitle ?? 'Summer Sale' }}" class="cta-bg-img">
         <div class="cta-overlay"></div>
         <div class="cta-content">
-            <h2 class="cta-title">Summer Sale</h2>
-            <p class="cta-subtitle">Up to 50% Off on Kids Collection</p>
-            <a href="{{ route('categories.index') }}" class="cta-btn" id="cta-shop-now">Shop Now</a>
+            <h2 class="cta-title">{{ $ctaTitle ?? 'Summer Sale' }}</h2>
+            <p class="cta-subtitle">{{ $ctaSubtitle ?? 'Up to 50% Off on Kids Collection' }}</p>
+            <a href="{{ $ctaBtnLink ?? route('categories.index') }}" class="cta-btn" id="cta-shop-now">{{ $ctaBtnText ?? 'Shop Now' }}</a>
         </div>
     </section>
 
