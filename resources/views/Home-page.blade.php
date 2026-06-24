@@ -1,12 +1,157 @@
 @include('partials.header')
 
-    <!-- Hero Banner -->
-    <section class="hero-banner">
-        <img
-            src="{{ asset($heroBanner ?? 'images/img-home/hero-banner.jpg') }}"
-            alt="Kidz Wear - Happy Halloween Kids Collection"
-        >
+    <!-- Hero Banner Slider -->
+    <section class="hero-slider-wrap">
+        <div class="hero-slider" id="heroSlider">
+            <div class="hero-slide"><img src="{{ asset($heroBanner1) }}" alt="Slide 1"></div>
+            <div class="hero-slide"><img src="{{ asset($heroBanner2) }}" alt="Slide 2"></div>
+            <div class="hero-slide"><img src="{{ asset($heroBanner3) }}" alt="Slide 3"></div>
+        </div>
+        <div class="hero-slider-nav">
+            <button class="hero-prev" id="heroPrev">&#10094;</button>
+            <button class="hero-next" id="heroNext">&#10095;</button>
+        </div>
+        <div class="hero-dots" id="heroDots">
+            <span class="hero-dot active" data-index="0"></span>
+            <span class="hero-dot" data-index="1"></span>
+            <span class="hero-dot" data-index="2"></span>
+        </div>
     </section>
+
+    <style>
+        .hero-slider-wrap {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+        .hero-slider {
+            display: flex;
+            width: 300%; /* 3 slides */
+            transition: transform 0.5s ease-in-out;
+            align-items: stretch;
+        }
+        .hero-slide {
+            width: 33.3333%; /* 100% / 3 */
+            display: flex;
+        }
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+        /* Navigation Arrows */
+        .hero-slider-nav button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.6);
+            border: none;
+            color: #333;
+            padding: 10px 15px;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 10;
+            transition: background 0.3s;
+        }
+        .hero-slider-nav button:hover {
+            background: rgba(255,255,255,0.9);
+        }
+        .hero-prev { left: 20px; }
+        .hero-next { right: 20px; }
+        
+        /* Dots */
+        .hero-dots {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+        }
+        .hero-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin: 0 5px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .hero-dot.active {
+            background: #fff;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .hero-slider-nav button {
+                padding: 5px 10px;
+                font-size: 18px;
+            }
+            .hero-prev { left: 10px; }
+            .hero-next { right: 10px; }
+            .hero-dots { bottom: 10px; }
+            .hero-dot { width: 8px; height: 8px; }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.getElementById('heroSlider');
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.hero-dot');
+            const prevBtn = document.getElementById('heroPrev');
+            const nextBtn = document.getElementById('heroNext');
+            
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+            let autoSlideInterval;
+
+            function updateSlider() {
+                slider.style.transform = `translateX(-${currentSlide * (100 / totalSlides)}%)`;
+                dots.forEach(dot => dot.classList.remove('active'));
+                dots[currentSlide].classList.add('active');
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+            }
+
+            function prevSlide() {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updateSlider();
+            }
+
+            function resetInterval() {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(nextSlide, 5000);
+            }
+
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                resetInterval();
+            });
+
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                resetInterval();
+            });
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlider();
+                    resetInterval();
+                });
+            });
+
+            // Start auto slide
+            autoSlideInterval = setInterval(nextSlide, 5000);
+        });
+    </script>
 
     <!-- Shop by Category Section -->
     <section class="category-section">
@@ -82,7 +227,10 @@
         <div class="fp-grid fp-tab-content fp-tab-content--active" id="fp-baby">
             @forelse($featuredProducts->filter(fn($p) => stripos($p->category, 'baby') !== false)->take(6) as $product)
             <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="fp-card">
-                <div class="fp-card-img-wrap">
+                <div class="fp-card-img-wrap" style="position: relative;">
+                    @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                    @endif
                     <img src="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}" alt="{{ $product->name }}">
                 </div>
                 <div class="fp-card-info">
@@ -108,7 +256,10 @@
         <div class="fp-grid fp-tab-content" id="fp-girls">
             @forelse($featuredProducts->filter(fn($p) => stripos($p->category, 'girls') !== false)->take(6) as $product)
             <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="fp-card">
-                <div class="fp-card-img-wrap">
+                <div class="fp-card-img-wrap" style="position: relative;">
+                    @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                    @endif
                     <img src="{{ asset($product->images[0] ?? 'images/img-home/girls-wear.jpg') }}" alt="{{ $product->name }}">
                 </div>
                 <div class="fp-card-info">
@@ -134,7 +285,10 @@
         <div class="fp-grid fp-tab-content" id="fp-boys">
             @forelse($featuredProducts->filter(fn($p) => stripos($p->category, 'boys') !== false)->take(6) as $product)
             <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="fp-card">
-                <div class="fp-card-img-wrap">
+                <div class="fp-card-img-wrap" style="position: relative;">
+                    @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                    @endif
                     <img src="{{ asset($product->images[0] ?? 'images/img-home/boys-wear.jpg') }}" alt="{{ $product->name }}">
                 </div>
                 <div class="fp-card-info">
@@ -160,7 +314,10 @@
         <div class="fp-grid fp-tab-content" id="fp-party">
             @forelse($featuredProducts->filter(fn($p) => stripos($p->category, 'party') !== false)->take(6) as $product)
             <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="fp-card">
-                <div class="fp-card-img-wrap">
+                <div class="fp-card-img-wrap" style="position: relative;">
+                    @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                    @endif
                     <img src="{{ asset($product->images[0] ?? 'images/img-home/partywear.jpg') }}" alt="{{ $product->name }}">
                 </div>
                 <div class="fp-card-info">
@@ -211,7 +368,10 @@
                     @forelse($newArrivals->take(3) as $product)
                     <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="na-card">
                         <div class="na-badge">New</div>
-                        <div class="na-card-img-wrap">
+                        <div class="na-card-img-wrap" style="position: relative;">
+                            @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                                <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                            @endif
                             <img src="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}" alt="{{ $product->name }}">
                         </div>
                         <p class="na-card-name">{{ $product->name }}</p>
@@ -244,7 +404,10 @@
                 @forelse($newArrivals->take(4) as $product)
                 <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="na-card">
                     <div class="na-badge">New</div>
-                    <div class="na-card-img-wrap">
+                    <div class="na-card-img-wrap" style="position: relative;">
+                        @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                            <div style="position: absolute; top: 10px; left: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Out of Stock</div>
+                        @endif
                         <img src="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}" alt="{{ $product->name }}">
                     </div>
                     <p class="na-card-name">{{ $product->name }}</p>
@@ -459,18 +622,29 @@
             rvDots.forEach(dot => dot.classList.remove('rv-dot--active'));
             
             // Add active class to current dot
-            rvDots[index].classList.add('rv-dot--active');
+            if(rvDots[index]) {
+                rvDots[index].classList.add('rv-dot--active');
+            }
             
             // Hide all cards
             rvCards.forEach(card => card.style.display = 'none');
             
             // Show cards based on screen size
             if (window.innerWidth <= 768) {
-                // Mobile: show 1 card
-                rvCards[index].style.display = 'block';
+                // Mobile: show 1 card at a time based on index
+                // Since there are only 3 dots, we can loop back or just map dot 0 -> card 0, dot 1 -> card 1...
+                // Actually it's better to show 1 card per dot
+                if(rvCards[index]) {
+                    rvCards[index].style.display = 'block';
+                }
             } else {
-                // Desktop: show 3 cards (all)
-                rvCards.forEach(card => card.style.display = 'block');
+                // Desktop: show 3 cards per slide
+                let start = index * 3;
+                for(let i = 0; i < 3; i++) {
+                    if (rvCards[start + i]) {
+                        rvCards[start + i].style.display = 'block';
+                    }
+                }
             }
             
             currentSlide = index;

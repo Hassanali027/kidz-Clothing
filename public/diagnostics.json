@@ -1,0 +1,104 @@
+{
+    "timestamp": "2026-06-23 23:26:41",
+    "requested_slug": "boys-wear",
+    "size_filter": null,
+    "price_range": {
+        "min": 0,
+        "max": 10000
+    },
+    "resolved_category": {
+        "id": 1,
+        "name": "boys",
+        "slug": "boys-wear",
+        "status": "active"
+    },
+    "unique_product_categories": [
+        "party",
+        "boys",
+        "girls",
+        "baby-wear",
+        "party-wear"
+    ],
+    "all_products_count": 22,
+    "active_products_count": 22,
+    "matched_products_count": 7,
+    "matched_products": [
+        {
+            "id": 22,
+            "name": "The Boys",
+            "price": "2000.00",
+            "sale_price": "1199.99",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "5-8",
+            "product_type": "T-Shirts"
+        },
+        {
+            "id": 21,
+            "name": "Boys",
+            "price": "4000.00",
+            "sale_price": "1999.91",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "2-5",
+            "product_type": null
+        },
+        {
+            "id": 20,
+            "name": "boys wear",
+            "price": "1000.00",
+            "sale_price": "999.99",
+            "status": "active",
+            "stock": 100,
+            "category": "boys",
+            "age_group": "5-8",
+            "product_type": null
+        },
+        {
+            "id": 17,
+            "name": "the boys",
+            "price": "2000.00",
+            "sale_price": "1999.99",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "0-2",
+            "product_type": null
+        },
+        {
+            "id": 7,
+            "name": "Casual cloth",
+            "price": "2000.00",
+            "sale_price": "999.98",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "8-14",
+            "product_type": null
+        },
+        {
+            "id": 6,
+            "name": "trouser -shirt",
+            "price": "3000.00",
+            "sale_price": "2500.00",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "5-8",
+            "product_type": null
+        },
+        {
+            "id": 2,
+            "name": "tshirts",
+            "price": "1300.00",
+            "sale_price": "1300.00",
+            "status": "active",
+            "stock": 0,
+            "category": "boys",
+            "age_group": "2-5",
+            "product_type": null
+        }
+    ]
+}

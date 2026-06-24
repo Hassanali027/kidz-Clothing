@@ -156,13 +156,13 @@
                 Already have an account? <a href="{{ route('login') }}">Login</a>
             </p>
 
-            <div class="auth-separator">
+            <!-- <div class="auth-separator">
                 <div class="auth-sep-line"></div>
                 OR
                 <div class="auth-sep-line"></div>
-            </div>
+            </div> -->
 
-            <div class="auth-social-row">
+            <!-- <div class="auth-social-row">
                 <a href="#" class="auth-social-btn">
                     <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google">
                     Sign up with Google
@@ -171,7 +171,7 @@
                     <img src="https://www.svgrepo.com/show/330401/facebook.svg" alt="Facebook">
                     Sign up with Facebook
                 </a>
-            </div>
+            </div> -->
 
         </form>
     </div>
