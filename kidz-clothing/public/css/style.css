@@ -1890,52 +1890,7 @@ body {
     color: #f06292;
 }
 
-/* Auth Buttons in Mobile Drawer */
-.mob-auth-btns {
-    display: flex;
-    gap: 12px;
-    padding: 16px 20px 10px;
-}
 
-.mob-auth-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    flex: 1;
-    padding: 11px 10px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    text-decoration: none;
-    transition: all 0.22s ease;
-    border: 2px solid transparent;
-}
-
-.mob-login-btn {
-    background: #fff;
-    color: #f06292;
-    border-color: #f06292;
-}
-
-.mob-login-btn:hover {
-    background: #f06292;
-    color: #fff;
-}
-
-.mob-signup-btn {
-    background: linear-gradient(135deg, #f06292, #e91e8c);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 3px 10px rgba(240, 98, 146, 0.35);
-}
-
-.mob-signup-btn:hover {
-    background: linear-gradient(135deg, #e91e8c, #c2185b);
-    box-shadow: 0 4px 14px rgba(240, 98, 146, 0.5);
-    transform: translateY(-1px);
-}
 
 
 /* Breadcrumb */
