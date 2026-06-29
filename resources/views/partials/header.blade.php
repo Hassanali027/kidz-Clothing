@@ -127,8 +127,6 @@
             </li>
         </ul>
 
-    </div>
-
         <!-- Auth Buttons -->
         <div class="mob-auth-divider"></div>
         <div class="mob-auth-btns">
@@ -141,6 +139,8 @@
                 Sign Up
             </a>
         </div>
+
+    </div>
 
     <!-- Global Search JavaScript Interactions -->
     <script>
