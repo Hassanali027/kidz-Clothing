@@ -155,6 +155,12 @@
 </style>
 
 <div class="checkout-page">
+    @if(session('error'))
+        <div style="max-width: 1120px; margin: 0 auto 20px; background: #f8d7da; color: #721c24; padding: 13px 16px; border-radius: 6px;">{{ session('error') }}</div>
+    @endif
+    @if($errors->any())
+        <div style="max-width: 1120px; margin: 0 auto 20px; background: #f8d7da; color: #721c24; padding: 13px 16px; border-radius: 6px;">{{ $errors->first() }}</div>
+    @endif
     <form action="{{ route('checkout.placeOrder') }}" method="POST">
         @csrf
         <div class="checkout-container">
@@ -167,23 +173,23 @@
                     <div class="checkout-form-grid">
                         <div class="checkout-form-group">
                             <label class="checkout-label">First Name</label>
-                            <input type="text" name="first_name" class="checkout-input" placeholder="Enter your first name" required>
+                            <input type="text" name="first_name" class="checkout-input" value="{{ old('first_name', auth()->user()->name ?? '') }}" placeholder="Enter your first name" required>
                         </div>
                         <div class="checkout-form-group">
                             <label class="checkout-label">Last Name</label>
-                            <input type="text" name="last_name" class="checkout-input" placeholder="Enter your last name" required>
+                            <input type="text" name="last_name" class="checkout-input" value="{{ old('last_name') }}" placeholder="Enter your last name" required>
                         </div>
                         <div class="checkout-form-group full">
                             <label class="checkout-label">Address</label>
-                            <input type="text" name="address" class="checkout-input" placeholder="House #, Street, Area" required>
+                            <input type="text" name="address" class="checkout-input" value="{{ old('address', auth()->user()->address ?? '') }}" placeholder="House #, Street, Area" required>
                         </div>
                         <div class="checkout-form-group">
                             <label class="checkout-label">City</label>
-                            <input type="text" name="city" class="checkout-input" placeholder="Enter your city" required>
+                            <input type="text" name="city" class="checkout-input" value="{{ old('city', auth()->user()->city ?? '') }}" placeholder="Enter your city" required>
                         </div>
                         <div class="checkout-form-group">
                             <label class="checkout-label">Phone Number</label>
-                            <input type="text" name="phone" class="checkout-input" placeholder="e.g. 0300 1234567" required>
+                            <input type="text" name="phone" class="checkout-input" value="{{ old('phone', auth()->user()->phone ?? '') }}" placeholder="e.g. 0300 1234567" required>
                         </div>
                     </div>
                 </div>
@@ -224,6 +230,14 @@
                         </div>
                     </div>
                     @endforeach
+
+                    <div style="margin: 20px 0;">
+                        <label class="checkout-label" for="coupon_code">Coupon Code</label>
+                        <input type="text" id="coupon_code" name="coupon_code" class="checkout-input" value="{{ old('coupon_code') }}" placeholder="Enter coupon code" style="text-transform: uppercase;">
+                        @guest
+                            <p style="font-size: 12px; color: #666; margin: 7px 0 0;">To use a coupon, please <a href="{{ route('login') }}" style="color: #0288d1; font-weight: 700;">log in</a> first.</p>
+                        @endguest
+                    </div>
 
                     <div id="discount-row" class="order-total-row" style="display: none; border-top: none; padding-top: 5px; margin-top: 5px;">
                         <span class="order-total-label" style="font-size: 15px; font-weight: 600; color: #4caf50;">Discount (5%):</span>

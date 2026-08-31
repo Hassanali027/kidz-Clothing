@@ -86,6 +86,12 @@
                     </a>
                 </li>
                 <li class="menu-item">
+                    <a href="{{ route('admin.coupons') }}" class="menu-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Coupon Codes</span>
+                    </a>
+                </li>
+                <li class="menu-item">
                     <a href="{{ route('admin.blogs') }}" class="menu-link {{ request()->routeIs('admin.blogs') ? 'active' : '' }}">
                         <i class="fa-solid fa-blog"></i>
                         <span>Blogs Section</span>

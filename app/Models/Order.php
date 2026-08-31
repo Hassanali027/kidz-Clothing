@@ -17,6 +17,8 @@ class Order extends Model
         'address',
         'city',
         'phone',
+        'coupon_code',
+        'discount_amount',
         'total_amount',
         'payment_method',
         'status'

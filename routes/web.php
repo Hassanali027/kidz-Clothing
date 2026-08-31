@@ -115,6 +115,12 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::get('/products/edit/{id}', [AdminController::class, 'editProduct'])->name('products.edit');
     Route::post('/products/update/{id}', [AdminController::class, 'updateProduct'])->name('products.update');
     Route::post('/products/{id}/delete', [AdminController::class, 'deleteProduct'])->name('products.delete');
+
+    // Coupon Management Routes
+    Route::get('/coupons', [AdminController::class, 'coupons'])->name('coupons');
+    Route::post('/coupons', [AdminController::class, 'storeCoupon'])->name('coupons.store');
+    Route::post('/coupons/{id}/toggle', [AdminController::class, 'toggleCoupon'])->name('coupons.toggle');
+    Route::post('/coupons/{id}/delete', [AdminController::class, 'deleteCoupon'])->name('coupons.delete');
     
     Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs');
     Route::get('/blogs/add', [AdminBlogController::class, 'create'])->name('blogs.add');
@@ -165,5 +171,4 @@ Route::get('/privacy-policy', function () {
 
 // Category Slug Route (MUST BE LAST - Catch-all route)
 Route::get('/{slug}', [CategoryController::class, 'show'])->name('categories.show');
-
 

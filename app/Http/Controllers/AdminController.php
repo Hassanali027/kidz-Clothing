@@ -8,12 +8,53 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Coupon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    public function coupons()
+    {
+        return view('admin.coupons', [
+            'coupons' => Coupon::withCount('usages')->latest()->get(),
+        ]);
+    }
+
+    public function storeCoupon(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|max:50|unique:coupons,code',
+            'discount_percent' => 'required|in:5,10',
+        ]);
+
+        $discountPercent = (int) $request->discount_percent;
+        Coupon::create([
+            'code' => strtoupper(trim($request->code)),
+            'discount_percent' => $discountPercent,
+            'single_use_per_user' => $discountPercent === 10,
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('admin.coupons')->with('success', 'Coupon created successfully.');
+    }
+
+    public function toggleCoupon($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        $coupon->update(['is_active' => ! $coupon->is_active]);
+
+        return redirect()->route('admin.coupons')->with('success', 'Coupon status updated.');
+    }
+
+    public function deleteCoupon($id)
+    {
+        Coupon::findOrFail($id)->delete();
+
+        return redirect()->route('admin.coupons')->with('success', 'Coupon deleted successfully.');
+    }
+
     // ============================================
     // Authentication Functions
     // ============================================
