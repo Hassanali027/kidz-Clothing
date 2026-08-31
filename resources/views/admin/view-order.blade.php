@@ -121,6 +121,14 @@
                         <p style="font-weight: 600; color: #4caf50;">{{ strtoupper($order->payment_method) }}</p>
                     </div>
 
+                    @if($order->coupon_code)
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Coupon Code</p>
+                            <p style="font-weight: 700; color: #0288d1;">{{ $order->coupon_code }}</p>
+                            <p style="font-size: 13px; color: #4caf50; margin-top: 4px;">Discount: Rs {{ number_format($order->discount_amount ?? 0) }}</p>
+                        </div>
+                    @endif
+
                     <div style="margin-bottom: 20px;">
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Current Status</p>
                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">

@@ -9,9 +9,11 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Coupon;
+use App\Models\CouponUsage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -798,12 +800,66 @@ class AdminController extends Controller
             'phone' => 'required|string|max:50',
             'payment_method' => 'required|in:cod,online',
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'coupon_code' => 'nullable|string|max:50',
         ]);
 
-        $order = Order::findOrFail($id);
-        $order->update($request->only([
-            'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status',
-        ]));
+        try {
+            $order = DB::transaction(function () use ($request, $id) {
+                $order = Order::with('items')->lockForUpdate()->findOrFail($id);
+                $couponCode = strtoupper(trim((string) $request->coupon_code));
+                $coupon = null;
+
+                if ($couponCode !== '') {
+                    $coupon = Coupon::where('code', $couponCode)->where('is_active', true)->lockForUpdate()->first();
+                    if (!$coupon) {
+                        throw new \RuntimeException('This coupon code is invalid or inactive.');
+                    }
+
+                    if ($coupon->single_use_per_user && $order->user_id) {
+                        $alreadyUsed = CouponUsage::where('coupon_id', $coupon->id)
+                            ->where('user_id', $order->user_id)
+                            ->where('order_id', '!=', $order->id)
+                            ->exists();
+
+                        if ($alreadyUsed) {
+                            throw new \RuntimeException('This 10% coupon has already been used with this customer email.');
+                        }
+                    }
+                }
+
+                $subtotal = $order->items->sum(function ($item) {
+                    return $item->price * $item->quantity;
+                });
+                $discountPercent = $request->payment_method === 'online' ? 5 : 0;
+                if ($coupon) {
+                    $discountPercent += $coupon->discount_percent;
+                }
+                $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+
+                // Remove any previous one-time coupon usage recorded for this order.
+                CouponUsage::where('order_id', $order->id)->delete();
+
+                $order->update(array_merge($request->only([
+                    'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status',
+                ]), [
+                    'coupon_code' => $coupon ? $coupon->code : null,
+                    'discount_amount' => $discountAmount,
+                    'total_amount' => $subtotal - $discountAmount,
+                ]));
+
+                if ($coupon && $coupon->single_use_per_user && $order->user_id) {
+                    CouponUsage::create([
+                        'coupon_id' => $coupon->id,
+                        'user_id' => $order->user_id,
+                        'order_id' => $order->id,
+                    ]);
+                }
+
+                return $order;
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->withInput()->withErrors(['coupon_code' => $exception->getMessage()]);
+        }
 
         return redirect()->route('admin.orders.view', $order->id)->with('success', 'Order updated successfully.');
     }

@@ -9,6 +9,9 @@
 
     <div class="content-card" style="max-width: 850px;">
         <div class="card-header"><h2>Edit {{ $order->order_number }}</h2></div>
+        @if($errors->any())
+            <div style="margin: 20px 24px 0; background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 6px;">{{ $errors->first() }}</div>
+        @endif
         <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" style="padding: 24px;">
             @csrf
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
@@ -46,6 +49,11 @@
                             <option value="{{ $value }}" {{ old('status', strtolower($order->status)) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Coupon Code (Optional)</label>
+                    <input name="coupon_code" class="form-control" value="{{ old('coupon_code', $order->coupon_code) }}" placeholder="Enter an active coupon code, or clear to remove it" style="text-transform: uppercase;">
+                    <small style="display: block; color: #666; margin-top: 6px;">The discount and order total will be calculated again when you save.</small>
                 </div>
             </div>
 
