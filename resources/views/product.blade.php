@@ -370,7 +370,7 @@
                         @else
                             <p class="pd-option-label">Age: <strong id="pd-size-val">{{ $product->age_group ?? 'Standard' }}</strong></p>
                         @endif
-                        <a href="#" class="pd-size-guide" id="pd-size-guide-link" onclick="openSizeGuide(event)">Size Guide ›</a>
+                        {{-- Size Guide link temporarily disabled --}}
                         <div class="pd-sizes" style="margin-top:8px;">
                             @if($product->size)
                                 @foreach($sizes as $index => $size)
@@ -528,21 +528,11 @@
                 }
             });
         });
-        // ── Size Guide Drawer ──
-        function openSizeGuide(e) {
-            e.preventDefault();
-            document.getElementById('sg-drawer').classList.add('sg-open');
-            document.getElementById('sg-overlay').classList.add('sg-show');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeSizeGuide() {
-            document.getElementById('sg-drawer').classList.remove('sg-open');
-            document.getElementById('sg-overlay').classList.remove('sg-show');
-            document.body.style.overflow = '';
-        }
+        // Size Guide drawer functionality temporarily disabled.
     </script>
 
-    <!-- ── Size Guide Drawer ── -->
+    {{-- Size Guide drawer temporarily disabled --}}
+    {{--
     <div class="sg-overlay" id="sg-overlay" onclick="closeSizeGuide()"></div>
     <div class="sg-drawer" id="sg-drawer">
         <!-- Header -->
@@ -629,6 +619,7 @@
             </ul>
         </div>
     </div>
+    --}}
 
 
     {{-- Testimonials Section --}}
