@@ -5,15 +5,27 @@
     $testimonialsQuery = \App\Models\Testimonial::where('is_active', true);
 
     if (isset($product)) {
-        $testimonialsQuery->where('product_id', $product->id);
+        $testimonials = $testimonialsQuery->where('product_id', $product->id)
+            ->orderBy('sort_order')->orderBy('created_at', 'desc')->get();
+        $submittedReviews = \App\Models\ProductReview::where('product_id', $product->id)
+            ->where('status', 'approved')->with('user')->latest()->get()
+            ->map(function ($review) {
+                return (object) [
+                    'name' => $review->user ? $review->user->name : 'Customer',
+                    'review_text' => $review->review_text,
+                    'rating' => $review->rating,
+                ];
+            });
+        $testimonials = $testimonials->concat($submittedReviews);
     } else {
-        $testimonialsQuery->whereNull('product_id');
+        $testimonials = $testimonialsQuery->whereNull('product_id')
+            ->orderBy('sort_order')->orderBy('created_at', 'desc')->get();
     }
 
-    $testimonials = $testimonialsQuery
-        ->orderBy('sort_order')
-        ->orderBy('created_at', 'desc')
-        ->get();
+    /* $testimonials is either assigned product reviews or home-page reviews. */
+    /* keep this query result as a collection for the existing card markup */
+    $testimonials = $testimonials
+        ->values();
 @endphp
 
 @if($testimonials->isNotEmpty())
