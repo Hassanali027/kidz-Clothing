@@ -56,9 +56,9 @@
                     <label>Age Group</label>
                     <input type="text" name="age_group" class="form-control" value="{{ old('age_group') }}" placeholder="e.g. 2-5, 5-8, 8-10" required>
                     <small style="color: #666;">For multiple age groups, separate each option with a comma.</small>
-                    <label style="display:block; margin-top:12px;">Quantity for each age group</label>
-                    <input type="text" name="size_stock_input" class="form-control" value="{{ old('size_stock_input') }}" placeholder="e.g. 1-2: 5, 3-4: 0, 5-6: 8">
-                    <small style="color: #666;">Write age group and quantity. Use 0 when that size is unavailable.</small>
+                    <div class="age-stock-editor" data-stock="{}" style="margin-top:14px;"></div>
+                    <input type="hidden" name="size_stock_input" class="age-stock-input">
+                    <small style="color: #666;">Enter age groups above, then set each quantity below. Use 0 when unavailable.</small>
                 </div>
             </div>
 
@@ -438,6 +438,34 @@
                     updateHiddenInput();
                 };
             });
+            </script>
+
+            <script>
+                (function () {
+                    var ageInput = document.querySelector('input[name="age_group"]');
+                    var editor = document.querySelector('.age-stock-editor');
+                    var hiddenInput = document.querySelector('.age-stock-input');
+                    var stored = {};
+
+                    function renderStockFields() {
+                        var ages = ageInput.value.split(',').map(function (age) { return age.trim(); }).filter(Boolean);
+                        var values = {};
+                        editor.querySelectorAll('input[data-age]').forEach(function (input) { values[input.dataset.age] = input.value; });
+                        editor.innerHTML = ages.length ? '<label style="display:block; margin-bottom:8px; font-weight:700;">Quantity for each age group</label>' : '';
+                        ages.forEach(function (age) {
+                            var row = document.createElement('div');
+                            row.style.cssText = 'display:flex; align-items:center; gap:10px; margin-bottom:8px; max-width:300px;';
+                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + (values[age] || stored[age] || 0) + '">';
+                            editor.appendChild(row);
+                        });
+                    }
+
+                    ageInput.addEventListener('input', renderStockFields);
+                    ageInput.closest('form').addEventListener('submit', function () {
+                        hiddenInput.value = Array.prototype.map.call(editor.querySelectorAll('input[data-age]'), function (input) { return input.dataset.age + ':' + input.value; }).join(', ');
+                    });
+                    renderStockFields();
+                })();
             </script>
 
             <div class="form-actions">
