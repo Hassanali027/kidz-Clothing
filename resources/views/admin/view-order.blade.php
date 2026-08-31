@@ -3,6 +3,9 @@
 @section('header_title', 'Order Details')
 
 @section('content')
+    @if(session('success'))
+        <div style="background: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">✓ {{ session('success') }}</div>
+    @endif
     <div style="margin-bottom: 20px;">
         <a href="{{ route('admin.orders') }}" style="text-decoration: none; color: #666; font-weight: 600;">
             <i class="fa-solid fa-arrow-left"></i> Back to Orders
@@ -133,6 +136,10 @@
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+                    <a href="{{ route('admin.orders.edit', $order->id) }}" style="display: block; width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; background: #f59e0b; color: white; border-radius: 6px; font-weight: 700; text-align: center; text-decoration: none;">
+                        <i class="fa-solid fa-pen"></i> Edit Order
+                    </a>
 
                     <form action="{{ route('admin.orders.delete', $order->id) }}" method="POST" onsubmit="confirmDelete(event, this)">
                         @csrf

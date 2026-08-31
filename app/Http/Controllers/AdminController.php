@@ -778,6 +778,36 @@ class AdminController extends Controller
         ]);
     }
 
+    public function editOrder($id)
+    {
+        $order = Order::with('items')->findOrFail($id);
+
+        return view('admin.edit-order', [
+            'pageTitle' => 'Edit Order - ' . $order->order_number,
+            'order' => $order,
+        ]);
+    }
+
+    public function updateOrder(Request $request, $id)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'address' => 'required|string|max:1000',
+            'city' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'payment_method' => 'required|in:cod,online',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+        ]);
+
+        $order = Order::findOrFail($id);
+        $order->update($request->only([
+            'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status',
+        ]));
+
+        return redirect()->route('admin.orders.view', $order->id)->with('success', 'Order updated successfully.');
+    }
+
     public function deleteOrder($id)
     {
         try {

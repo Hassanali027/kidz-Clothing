@@ -52,6 +52,9 @@
                                     <a href="{{ route('admin.orders.view', $order->id) }}" class="btn-action btn-edit" title="View Details">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
+                                    <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn-action" style="background: #f59e0b; color: #fff;" title="Edit Order">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
                                     <form action="{{ route('admin.orders.delete', $order->id) }}" method="POST" onsubmit="confirmDelete(event, this)" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn-action btn-delete" title="Delete">

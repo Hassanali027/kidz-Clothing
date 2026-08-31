@@ -133,6 +133,8 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     // Order Management Routes
     Route::get('/orders', [AdminController::class, 'orderList'])->name('orders');
     Route::get('/orders/{id}', [AdminController::class, 'viewOrder'])->name('orders.view');
+    Route::get('/orders/{id}/edit', [AdminController::class, 'editOrder'])->name('orders.edit');
+    Route::post('/orders/{id}/update', [AdminController::class, 'updateOrder'])->name('orders.update');
     Route::post('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('orders.delete');
     Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
 
