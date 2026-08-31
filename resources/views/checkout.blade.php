@@ -161,6 +161,12 @@
     @if($errors->any())
         <div style="max-width: 1120px; margin: 0 auto 20px; background: #f8d7da; color: #721c24; padding: 13px 16px; border-radius: 6px;">{{ $errors->first() }}</div>
     @endif
+    @if(session('success'))
+        <div style="max-width: 1120px; margin: 0 auto 20px; background: #d4edda; color: #155724; padding: 13px 16px; border-radius: 6px;">{{ session('success') }}</div>
+    @endif
+    @if($couponError)
+        <div style="max-width: 1120px; margin: 0 auto 20px; background: #fff3cd; color: #856404; padding: 13px 16px; border-radius: 6px;">{{ $couponError }}</div>
+    @endif
     <form action="{{ route('checkout.placeOrder') }}" method="POST">
         @csrf
         <div class="checkout-container">
@@ -233,14 +239,17 @@
 
                     <div style="margin: 20px 0;">
                         <label class="checkout-label" for="coupon_code">Coupon Code</label>
-                        <input type="text" id="coupon_code" name="coupon_code" class="checkout-input" value="{{ old('coupon_code') }}" placeholder="Enter coupon code" style="text-transform: uppercase;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="coupon_code" name="coupon_code" class="checkout-input" value="{{ old('coupon_code', $couponCode) }}" placeholder="Enter coupon code" style="text-transform: uppercase;">
+                            <button type="submit" formaction="{{ route('checkout.applyCoupon') }}" formnovalidate style="border: 0; border-radius: 5px; background: #0288d1; color: #fff; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">Apply</button>
+                        </div>
                         @guest
                             <p style="font-size: 12px; color: #666; margin: 7px 0 0;">To use a coupon, please <a href="{{ route('login') }}" style="color: #0288d1; font-weight: 700;">log in</a> first.</p>
                         @endguest
                     </div>
 
-                    <div id="discount-row" class="order-total-row" style="display: none; border-top: none; padding-top: 5px; margin-top: 5px;">
-                        <span class="order-total-label" style="font-size: 15px; font-weight: 600; color: #4caf50;">Discount (5%):</span>
+                    <div id="discount-row" class="order-total-row" style="display: {{ $coupon ? 'flex' : 'none' }}; border-top: none; padding-top: 5px; margin-top: 5px;">
+                        <span id="discount-label" class="order-total-label" style="font-size: 15px; font-weight: 600; color: #4caf50;">Discount ({{ $coupon ? $coupon->discount_percent : 5 }}%):</span>
                         <span class="order-total-value" style="font-size: 15px; font-weight: 600; color: #4caf50;">-Rs <span id="discount-amount">0</span></span>
                     </div>
                     <div class="order-total-row">
@@ -258,6 +267,7 @@
 
 <script>
     const totalAmount = {{ $total }};
+    const couponDiscountPercent = {{ $coupon ? $coupon->discount_percent : 0 }};
     
     function updateTotal() {
         const method = document.querySelector('input[name="payment_method"]:checked').value;
@@ -267,20 +277,24 @@
         const onlineBox = document.getElementById('online-payment-box');
         const codBox = document.getElementById('cod-payment-box');
         const onlineDetails = document.getElementById('online-payment-details');
+        const discountLabel = document.getElementById('discount-label');
 
-        if (method === 'online') {
-            const discount = Math.round(totalAmount * 0.05);
+        const discountPercent = couponDiscountPercent || (method === 'online' ? 5 : 0);
+
+        if (discountPercent > 0) {
+            const discount = Math.round(totalAmount * discountPercent) / 100;
             const final = totalAmount - discount;
             
             discountRow.style.display = 'flex';
+            discountLabel.textContent = 'Discount (' + discountPercent + '%):';
             discountAmountEl.textContent = discount.toLocaleString();
             finalTotalEl.textContent = final.toLocaleString();
             
-            onlineBox.style.borderColor = '#4fc3f7';
-            onlineBox.style.background = '#f1faff';
-            codBox.style.borderColor = '#ddd';
-            codBox.style.background = '#fff';
-            onlineDetails.style.display = 'block';
+            onlineBox.style.borderColor = method === 'online' ? '#4fc3f7' : '#ddd';
+            onlineBox.style.background = method === 'online' ? '#f1faff' : '#fff';
+            codBox.style.borderColor = method === 'cod' ? '#4fc3f7' : '#ddd';
+            codBox.style.background = method === 'cod' ? '#f1faff' : '#fff';
+            onlineDetails.style.display = method === 'online' ? 'block' : 'none';
         } else {
             discountRow.style.display = 'none';
             finalTotalEl.textContent = totalAmount.toLocaleString();
@@ -292,6 +306,8 @@
             onlineDetails.style.display = 'none';
         }
     }
+
+    updateTotal();
 </script>
 
 @include('partials.footer')

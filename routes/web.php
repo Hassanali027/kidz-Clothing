@@ -60,6 +60,7 @@ Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.
 
 // Checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
 
 // Authentication
@@ -171,4 +172,3 @@ Route::get('/privacy-policy', function () {
 
 // Category Slug Route (MUST BE LAST - Catch-all route)
 Route::get('/{slug}', [CategoryController::class, 'show'])->name('categories.show');
-

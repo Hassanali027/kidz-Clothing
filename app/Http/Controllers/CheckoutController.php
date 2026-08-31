@@ -23,12 +23,56 @@ class CheckoutController extends Controller
             $total += $item['price'] * $item['quantity'];
         }
 
+        $couponCode = session('checkout_coupon_code');
+        $coupon = null;
+        $couponError = null;
+
+        if ($couponCode && auth()->check()) {
+            list($coupon, $couponError) = $this->findUsableCoupon($couponCode);
+            if (!$coupon) {
+                session()->forget('checkout_coupon_code');
+                $couponCode = null;
+            }
+        }
+
+        $couponDiscount = $coupon ? round($total * ($coupon->discount_percent / 100), 2) : 0;
+
         return view('checkout', [
             'pageTitle' => 'Checkout | Kidz Wear',
             'metaDescription' => 'Complete your purchase.',
             'cart' => $cart,
-            'total' => $total
+            'total' => $total,
+            'couponCode' => $couponCode,
+            'coupon' => $coupon,
+            'couponDiscount' => $couponDiscount,
+            'couponError' => $couponError,
         ]);
+    }
+
+    public function applyCoupon(Request $request)
+    {
+        $request->validate(['coupon_code' => 'nullable|string|max:50']);
+
+        $couponCode = strtoupper(trim((string) $request->coupon_code));
+        if ($couponCode === '') {
+            session()->forget('checkout_coupon_code');
+            return redirect()->route('checkout')->with('success', 'Coupon removed.');
+        }
+
+        session(['checkout_coupon_code' => $couponCode]);
+
+        if (!auth()->check()) {
+            $request->session()->put('url.intended', route('checkout'));
+            return redirect()->route('login')->with('error', 'Please log in or create an account to use this coupon.');
+        }
+
+        list($coupon, $error) = $this->findUsableCoupon($couponCode);
+        if (!$coupon) {
+            session()->forget('checkout_coupon_code');
+            return redirect()->route('checkout')->with('error', $error);
+        }
+
+        return redirect()->route('checkout')->with('success', $coupon->discount_percent . '% coupon applied successfully.');
     }
 
     public function placeOrder(Request $request)
@@ -55,6 +99,7 @@ class CheckoutController extends Controller
 
         $couponCode = strtoupper(trim((string) $request->coupon_code));
         if ($couponCode !== '' && !auth()->check()) {
+            session(['checkout_coupon_code' => $couponCode]);
             $request->session()->put('url.intended', route('checkout'));
             return redirect()->route('login')->with('error', 'Please log in before using a coupon code.');
         }
@@ -126,11 +171,29 @@ class CheckoutController extends Controller
 
         // Clear cart
         session()->forget('cart');
+        session()->forget('checkout_coupon_code');
 
         return view('order-success', [
             'pageTitle' => 'Order Success | Kidz Wear',
             'metaDescription' => 'Your order has been placed successfully.',
             'orderId' => $order->order_number
         ]);
+    }
+
+    private function findUsableCoupon($couponCode)
+    {
+        $coupon = Coupon::where('code', strtoupper(trim($couponCode)))
+            ->where('is_active', true)
+            ->first();
+
+        if (!$coupon) {
+            return [null, 'This coupon code is invalid or inactive.'];
+        }
+
+        if ($coupon->single_use_per_user && CouponUsage::where('coupon_id', $coupon->id)->where('user_id', auth()->id())->exists()) {
+            return [null, 'This 10% coupon has already been used with your email address.'];
+        }
+
+        return [$coupon, null];
     }
 }
