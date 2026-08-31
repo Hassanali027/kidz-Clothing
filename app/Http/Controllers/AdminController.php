@@ -922,6 +922,7 @@ class AdminController extends Controller
                     $discountPercent += $coupon->discount_percent;
                 }
                 $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+                $shippingCharge = $subtotal < 3000 ? 250 : 0;
 
                 // Remove any previous one-time coupon usage recorded for this order.
                 CouponUsage::where('order_id', $order->id)->delete();
@@ -931,7 +932,7 @@ class AdminController extends Controller
                 ]), [
                     'coupon_code' => $coupon ? $coupon->code : null,
                     'discount_amount' => $discountAmount,
-                    'total_amount' => $subtotal - $discountAmount,
+                    'total_amount' => $subtotal - $discountAmount + $shippingCharge,
                 ]));
 
                 foreach ($request->input('item_sizes', []) as $itemId => $selectedSize) {

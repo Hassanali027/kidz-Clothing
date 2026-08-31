@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
+    private const FREE_DELIVERY_THRESHOLD = 3000;
+    private const SHIPPING_CHARGE = 250;
+
     public function index()
     {
         $cart = session()->get('cart', []);
@@ -36,6 +39,8 @@ class CheckoutController extends Controller
         }
 
         $couponDiscount = $coupon ? round($total * ($coupon->discount_percent / 100), 2) : 0;
+        $shippingCharge = $total < self::FREE_DELIVERY_THRESHOLD ? self::SHIPPING_CHARGE : 0;
+        $freeDeliveryRemaining = max(0, self::FREE_DELIVERY_THRESHOLD - $total);
 
         return view('checkout', [
             'pageTitle' => 'Checkout | Kidz Wear',
@@ -46,6 +51,8 @@ class CheckoutController extends Controller
             'coupon' => $coupon,
             'couponDiscount' => $couponDiscount,
             'couponError' => $couponError,
+            'shippingCharge' => $shippingCharge,
+            'freeDeliveryRemaining' => $freeDeliveryRemaining,
         ]);
     }
 
@@ -125,7 +132,8 @@ class CheckoutController extends Controller
                 }
 
                 $discount = round($total * ($discountPercent / 100), 2);
-                $finalTotal = $total - $discount;
+                $shippingCharge = $total < self::FREE_DELIVERY_THRESHOLD ? self::SHIPPING_CHARGE : 0;
+                $finalTotal = $total - $discount + $shippingCharge;
 
                 $order = Order::create([
                     'user_id' => auth()->id(),

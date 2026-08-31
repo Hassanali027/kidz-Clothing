@@ -320,6 +320,17 @@
                         <span id="discount-label" class="order-total-label" style="font-size: 15px; font-weight: 600; color: #4caf50;">Discount ({{ $coupon ? $coupon->discount_percent : 5 }}%):</span>
                         <span class="order-total-value" style="font-size: 15px; font-weight: 600; color: #4caf50;">-Rs <span id="discount-amount">0</span></span>
                     </div>
+                    <div class="order-total-row" style="border-top: none; padding-top: 5px; margin-top: 5px;">
+                        <span class="order-total-label" style="font-size: 15px; font-weight: 600;">Shipping Charges:</span>
+                        <span id="shipping-amount" class="order-total-value" style="font-size: 15px; font-weight: 600; color: {{ $shippingCharge ? '#333' : '#4caf50' }};">{{ $shippingCharge ? 'Rs ' . number_format($shippingCharge) : 'Free' }}</span>
+                    </div>
+                    <p id="free-delivery-note" style="margin: 6px 0 10px; color: {{ $shippingCharge ? '#666' : '#4caf50' }}; font-size: 12px; line-height: 1.45;">
+                        @if($shippingCharge)
+                            Add Rs {{ number_format($freeDeliveryRemaining, 2) }} more to get free delivery.
+                        @else
+                            Free delivery unlocked on orders of Rs 3,000 or more.
+                        @endif
+                    </p>
                     <div class="order-total-row">
                         <span class="order-total-label">Total Amount:</span>
                         <span class="order-total-value">Rs <span id="final-total">{{ number_format($total) }}</span></span>
@@ -336,6 +347,7 @@
 <script>
     const totalAmount = {{ $total }};
     const couponDiscountPercent = {{ $coupon ? $coupon->discount_percent : 0 }};
+    const shippingCharge = {{ $shippingCharge }};
     
     function updateTotal() {
         const method = document.querySelector('input[name="payment_method"]:checked').value;
@@ -351,7 +363,7 @@
 
         if (discountPercent > 0) {
             const discount = Math.round(totalAmount * discountPercent) / 100;
-            const final = totalAmount - discount;
+            const final = totalAmount - discount + shippingCharge;
             
             discountRow.style.display = 'flex';
             if (couponDiscountPercent > 0 && method === 'online') {
@@ -371,7 +383,7 @@
             onlineDetails.style.display = method === 'online' ? 'block' : 'none';
         } else {
             discountRow.style.display = 'none';
-            finalTotalEl.textContent = totalAmount.toLocaleString();
+            finalTotalEl.textContent = (totalAmount + shippingCharge).toLocaleString();
             
             codBox.style.borderColor = '#4fc3f7';
             codBox.style.background = '#f1faff';
