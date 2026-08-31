@@ -51,6 +51,26 @@
                     </select>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Ordered Product Sizes</label>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                        @foreach($order->items as $item)
+                            @php
+                                $sizeOptions = $item->product ? $item->product->available_sizes : [$item->size];
+                                if ($item->size && !in_array($item->size, $sizeOptions, true)) $sizeOptions[] = $item->size;
+                            @endphp
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-weight: 600;">{{ $item->product_name }} <small style="color: #64748b;">(Qty: {{ $item->quantity }})</small></span>
+                                <select name="item_sizes[{{ $item->id }}]" class="form-control" style="width: 190px;">
+                                    @foreach($sizeOptions as $sizeOption)
+                                        <option value="{{ $sizeOption }}" {{ old('item_sizes.' . $item->id, $item->size) === $sizeOption ? 'selected' : '' }}>{{ $sizeOption }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    </div>
+                    <small style="display: block; color: #666; margin-top: 6px;">Select a new size for any product in this order, then save changes.</small>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Coupon Code (Optional)</label>
                     <input name="coupon_code" class="form-control" value="{{ old('coupon_code', $order->coupon_code) }}" placeholder="Enter an active coupon code, or clear to remove it" style="text-transform: uppercase;">
                     <small style="display: block; color: #666; margin-top: 6px;">The discount and order total will be calculated again when you save.</small>

@@ -99,7 +99,7 @@
                 </div>
                 <div class="form-group">
                     <label>Standard Size (Optional)</label>
-                    <input type="text" name="size" class="form-control" placeholder="e.g. Small, Medium, Large, or specific dimensions" value="{{ old('size', $product->size) }}">
+                    <input type="text" name="size" class="form-control" placeholder="Separate choices with commas: Small, Medium, Large" value="{{ old('size', $product->size) }}">
                 </div>
             </div>
 

@@ -834,7 +834,7 @@ class AdminController extends Controller
 
     public function viewOrder($id)
     {
-        $order = Order::with('items')->findOrFail($id);
+        $order = Order::with('items.product')->findOrFail($id);
         return view('admin.view-order', [
             'pageTitle' => 'Order Details - ' . $order->order_number,
             'order' => $order
@@ -843,7 +843,7 @@ class AdminController extends Controller
 
     public function editOrder($id)
     {
-        $order = Order::with('items')->findOrFail($id);
+        $order = Order::with('items.product')->findOrFail($id);
 
         return view('admin.edit-order', [
             'pageTitle' => 'Edit Order - ' . $order->order_number,
@@ -862,11 +862,13 @@ class AdminController extends Controller
             'payment_method' => 'required|in:cod,online',
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
             'coupon_code' => 'nullable|string|max:50',
+            'item_sizes' => 'nullable|array',
+            'item_sizes.*' => 'nullable|string|max:255',
         ]);
 
         try {
             $order = DB::transaction(function () use ($request, $id) {
-                $order = Order::with('items')->lockForUpdate()->findOrFail($id);
+                $order = Order::with('items.product')->lockForUpdate()->findOrFail($id);
                 $couponCode = $request->boolean('remove_coupon')
                     ? ''
                     : strtoupper(trim((string) $request->coupon_code));
@@ -909,6 +911,17 @@ class AdminController extends Controller
                     'discount_amount' => $discountAmount,
                     'total_amount' => $subtotal - $discountAmount,
                 ]));
+
+                foreach ($request->input('item_sizes', []) as $itemId => $selectedSize) {
+                    $item = $order->items->firstWhere('id', (int) $itemId);
+                    if (!$item || !$item->product) {
+                        continue;
+                    }
+
+                    if (in_array($selectedSize, $item->product->available_sizes, true)) {
+                        $item->update(['size' => $selectedSize]);
+                    }
+                }
 
                 if ($coupon && $coupon->single_use_per_user && $order->user_id) {
                     CouponUsage::create([

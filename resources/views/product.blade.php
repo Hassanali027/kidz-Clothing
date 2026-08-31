@@ -364,24 +364,17 @@
 
                     <!-- Size -->
                     <div class="pd-option-group" id="pd-size-group">
+                        @php($sizes = $product->available_sizes)
                         @if($product->size)
-                            @php
-                                $sizes = explode(',', $product->size);
-                                $sizes = array_map('trim', $sizes);
-                            @endphp
                             <p class="pd-option-label">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
                         @else
                             <p class="pd-option-label">Age: <strong id="pd-size-val">{{ $product->age_group ?? 'Standard' }}</strong></p>
                         @endif
                         {{-- Size Guide link temporarily disabled --}}
                         <div class="pd-sizes" style="margin-top:8px;">
-                            @if($product->size)
-                                @foreach($sizes as $index => $size)
-                                    <button type="button" class="pd-size-btn {{ $index == 0 ? 'pd-size-btn--active' : '' }}" data-size="{{ $size }}">{{ $size }}</button>
-                                @endforeach
-                            @else
-                                <button type="button" class="pd-size-btn pd-size-btn--active" data-size="{{ $product->age_group ?? 'Standard' }}">{{ $product->age_group ?? 'Standard' }}</button>
-                            @endif
+                            @foreach($sizes as $index => $size)
+                                <button type="button" class="pd-size-btn {{ $index == 0 ? 'pd-size-btn--active' : '' }}" data-size="{{ $size }}">{{ $size }}</button>
+                            @endforeach
                         </div>
                     </div>
 
@@ -393,7 +386,7 @@
                     <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->price }}">
                     <input type="hidden" name="image" value="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}">
                     <input type="hidden" name="color" id="selected_color" value="{{ isset($colors) ? $colors[0] : '' }}">
-                    <input type="hidden" name="size" id="selected_size" value="{{ isset($sizes) ? $sizes[0] : ($product->age_group ?? 'Standard') }}">
+                    <input type="hidden" name="size" id="selected_size" value="{{ $sizes[0] }}">
                     
                     <input type="hidden" name="buy_now" id="buy_now_input" value="0">
                     

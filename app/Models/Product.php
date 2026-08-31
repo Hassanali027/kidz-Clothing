@@ -83,4 +83,25 @@ class Product extends Model
     {
         return 'slug';
     }
+
+    public function getAvailableSizesAttribute()
+    {
+        $size = trim((string) $this->size);
+
+        if ($size === '') {
+            return [$this->age_group ?: 'Standard'];
+        }
+
+        if (strpos($size, ',') !== false) {
+            return array_values(array_filter(array_map('trim', explode(',', $size))));
+        }
+
+        // Supports previously entered values such as "1-2-3-4" as separate sizes,
+        // while keeping a single range such as "1-2" as one option.
+        if (substr_count($size, '-') > 1) {
+            return array_values(array_filter(array_map('trim', explode('-', $size))));
+        }
+
+        return [$size];
+    }
 }
