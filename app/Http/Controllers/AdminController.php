@@ -369,7 +369,8 @@ class AdminController extends Controller
                 'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'color' => 'nullable|string|max:255',
                 'size' => 'nullable|string|max:255',
-                'review_count' => 'nullable|integer|min:0'
+                'review_count' => 'nullable|integer|min:0',
+                'size_stock_input' => 'nullable|string|max:1000'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -411,6 +412,7 @@ class AdminController extends Controller
                 }
             }
 
+            $sizeStock = $this->parseSizeStock($request->size_stock_input);
             $product = Product::create([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -426,7 +428,8 @@ class AdminController extends Controller
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
                 'size' => $request->size,
-                'review_count' => $request->review_count ?? 0
+                'review_count' => $request->review_count ?? 0,
+                'size_stock' => $sizeStock
             ]);
 
             return redirect()->route('admin.products')->with('success', 'Product added successfully!');
@@ -468,7 +471,8 @@ class AdminController extends Controller
                 'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'color' => 'nullable|string|max:255',
                 'size' => 'nullable|string|max:255',
-                'review_count' => 'nullable|integer|min:0'
+                'review_count' => 'nullable|integer|min:0',
+                'size_stock_input' => 'nullable|string|max:1000'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -528,6 +532,7 @@ class AdminController extends Controller
                 }
             }
 
+            $sizeStock = $this->parseSizeStock($request->size_stock_input);
             $product->update([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -543,7 +548,8 @@ class AdminController extends Controller
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
                 'size' => $request->size,
-                'review_count' => $request->review_count ?? 0
+                'review_count' => $request->review_count ?? 0,
+                'size_stock' => $sizeStock
             ]);
 
             return redirect()->route('admin.products')->with('success', 'Product updated successfully!');
@@ -966,6 +972,20 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
+    }
+
+    private function parseSizeStock($input)
+    {
+        $stock = [];
+
+        foreach (explode(',', (string) $input) as $entry) {
+            $parts = array_map('trim', explode(':', $entry, 2));
+            if (count($parts) === 2 && $parts[0] !== '' && is_numeric($parts[1])) {
+                $stock[$parts[0]] = max(0, (int) $parts[1]);
+            }
+        }
+
+        return $stock;
     }
 
     private function getOrderSizeOptions()

@@ -57,6 +57,9 @@
                     <label>Age Group</label>
                     <input type="text" name="age_group" class="form-control" value="{{ old('age_group', $product->age_group) }}" placeholder="e.g. 2-5, 5-8, 8-10" required>
                     <small style="color: #666;">For multiple age groups, separate each option with a comma.</small>
+                    <label style="display:block; margin-top:12px;">Quantity for each age group</label>
+                    <input type="text" name="size_stock_input" class="form-control" value="{{ old('size_stock_input', collect($product->size_stock ?? [])->map(function ($quantity, $age) { return $age . ': ' . $quantity; })->implode(', ')) }}" placeholder="e.g. 1-2: 5, 3-4: 0, 5-6: 8">
+                    <small style="color: #666;">Write age group and quantity. Use 0 when that size is unavailable.</small>
                 </div>
             </div>
 

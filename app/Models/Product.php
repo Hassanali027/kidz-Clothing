@@ -26,6 +26,7 @@ class Product extends Model
         'related_products',
         'color',
         'size',
+        'size_stock',
         'review_count'
     ];
 
@@ -34,7 +35,8 @@ class Product extends Model
         'display_sections' => 'array',
         'related_products' => 'array',
         'price' => 'decimal:2',
-        'sale_price' => 'decimal:2'
+        'sale_price' => 'decimal:2',
+        'size_stock' => 'array'
     ];
 
     /**

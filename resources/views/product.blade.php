@@ -48,6 +48,7 @@
 .pd-size-btn { padding:6px 14px; border:1.5px solid #ddd; border-radius:6px; background:#fff; font-family:'Outfit',sans-serif; font-size:13px; font-weight:500; color:#444; cursor:pointer; transition:border-color 0.2s,background 0.2s,color 0.2s; }
 .pd-size-btn:hover { border-color:#f06292; color:#f06292; }
 .pd-size-btn--active { border-color:#f06292; background:#fff0f5; color:#f06292; font-weight:700; }
+.pd-size-btn--out { color:#a0a0a0; background:#f3f3f3; border-color:#d5d5d5; text-decoration:line-through; cursor:not-allowed; opacity:0.75; }
 .pd-qty-wrap { display:flex; align-items:center; gap:0; border:1.5px solid #ddd; border-radius:8px; overflow:hidden; width:fit-content; }
 .pd-qty-btn { width:38px; height:38px; border:none; background:#f5f5f5; font-size:18px; font-weight:600; color:#444; cursor:pointer; transition:background 0.2s; display:flex; align-items:center; justify-content:center; }
 .pd-qty-btn:hover { background:#ebebeb; }
@@ -369,7 +370,8 @@
                         {{-- Size Guide link temporarily disabled --}}
                         <div class="pd-sizes" style="margin-top:8px;">
                             @foreach($sizes as $index => $size)
-                                <button type="button" class="pd-size-btn {{ $index == 0 ? 'pd-size-btn--active' : '' }}" data-size="{{ $size }}">{{ $size }}</button>
+                                @php($outOfStock = array_key_exists($size, $product->size_stock ?? []) && ($product->size_stock[$size] ?? 0) <= 0)
+                                <button type="button" class="pd-size-btn {{ $index == 0 && !$outOfStock ? 'pd-size-btn--active' : '' }} {{ $outOfStock ? 'pd-size-btn--out' : '' }}" data-size="{{ $size }}" {{ $outOfStock ? 'disabled' : '' }}>{{ $size }}</button>
                             @endforeach
                         </div>
                     </div>
@@ -493,6 +495,12 @@
                 document.getElementById('selected_size').value = size;
             });
         });
+        var firstAvailableSize = document.querySelector('.pd-size-btn:not([disabled])');
+        if (firstAvailableSize && !document.querySelector('.pd-size-btn--active')) {
+            firstAvailableSize.classList.add('pd-size-btn--active');
+            document.getElementById('pd-size-val').textContent = firstAvailableSize.getAttribute('data-size');
+            document.getElementById('selected_size').value = firstAvailableSize.getAttribute('data-size');
+        }
 
         // ── Quantity ──
         document.getElementById('pd-qty-minus').addEventListener('click', function() {
