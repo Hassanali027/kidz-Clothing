@@ -89,7 +89,7 @@ class Product extends Model
         $size = trim((string) $this->size);
 
         if ($size === '') {
-            return [$this->age_group ?: 'Standard'];
+            $size = trim((string) ($this->age_group ?: 'Standard'));
         }
 
         if (strpos($size, ',') !== false) {
