@@ -49,6 +49,7 @@
 }
 .checkout-input {
     width: 100%;
+    box-sizing: border-box;
     padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -151,6 +152,70 @@
 /* Responsive */
 @media (max-width: 900px) {
     .checkout-container { grid-template-columns: 1fr; gap: 40px; }
+}
+
+@media (max-width: 600px) {
+    .checkout-page {
+        padding: 24px 16px 48px;
+    }
+    .checkout-container {
+        gap: 28px;
+    }
+    .checkout-section {
+        margin-bottom: 30px;
+    }
+    .checkout-section-title {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    .checkout-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .checkout-form-group {
+        margin-bottom: 13px;
+    }
+    .checkout-input {
+        padding: 12px;
+        font-size: 14px;
+    }
+    .checkout-payment-box {
+        padding: 16px;
+        gap: 10px;
+        border-radius: 7px;
+    }
+    .checkout-payment-label {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+    #online-payment-details {
+        padding: 13px !important;
+    }
+    .checkout-summary-col {
+        width: 100%;
+    }
+    .checkout-order-summary {
+        position: static;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .order-item {
+        gap: 12px;
+    }
+    .order-item-img {
+        width: 54px;
+        height: 62px;
+    }
+    .order-item-name { font-size: 13px; }
+    .order-item-price { font-size: 12px; }
+    #coupon_code { min-width: 0; }
+    .order-total-label, .order-total-value { font-size: 15px; }
+    .place-order-btn {
+        margin-top: 22px;
+        padding: 16px;
+        border-radius: 7px;
+    }
+    .checkout-page ~ .whatsapp-float { display: none; }
 }
 </style>
 
