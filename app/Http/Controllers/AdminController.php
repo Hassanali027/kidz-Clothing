@@ -323,7 +323,8 @@ class AdminController extends Controller
                 'status' => 'required|in:active,inactive,out-of-stock',
                 'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'color' => 'nullable|string|max:255',
-                'size' => 'nullable|string|max:255'
+                'size' => 'nullable|string|max:255',
+                'review_count' => 'nullable|integer|min:0'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -379,7 +380,8 @@ class AdminController extends Controller
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
-                'size' => $request->size
+                'size' => $request->size,
+                'review_count' => $request->review_count ?? 0
             ]);
 
             return redirect()->route('admin.products')->with('success', 'Product added successfully!');
@@ -420,7 +422,8 @@ class AdminController extends Controller
                 'status' => 'required|in:active,inactive,out-of-stock',
                 'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'color' => 'nullable|string|max:255',
-                'size' => 'nullable|string|max:255'
+                'size' => 'nullable|string|max:255',
+                'review_count' => 'nullable|integer|min:0'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -494,7 +497,8 @@ class AdminController extends Controller
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
                 'color' => $request->color,
-                'size' => $request->size
+                'size' => $request->size,
+                'review_count' => $request->review_count ?? 0
             ]);
 
             return redirect()->route('admin.products')->with('success', 'Product updated successfully!');

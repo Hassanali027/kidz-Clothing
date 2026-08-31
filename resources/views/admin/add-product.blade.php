@@ -58,6 +58,12 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label>Review Count</label>
+                <input type="number" name="review_count" class="form-control" min="0" value="{{ old('review_count', 0) }}" placeholder="e.g. 26">
+                <small style="color: #666;">Set how many reviews should appear on this product.</small>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label>Product Type (Optional)</label>

@@ -319,7 +319,7 @@
                         <span class="pd-star pd-star--half">★</span>
                     </span>
                     <span class="pd-rating-val">4.6</span>
-                    <span class="pd-rating-count">(26 Reviews)</span>
+                    <span class="pd-rating-count">({{ $product->review_count ?? 0 }} Reviews)</span>
                 </div>
 
                 <!-- Price -->

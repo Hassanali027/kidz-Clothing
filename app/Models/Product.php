@@ -25,7 +25,8 @@ class Product extends Model
         'display_sections',
         'related_products',
         'color',
-        'size'
+        'size',
+        'review_count'
     ];
 
     protected $casts = [
@@ -83,4 +84,3 @@ class Product extends Model
         return 'slug';
     }
 }
-
