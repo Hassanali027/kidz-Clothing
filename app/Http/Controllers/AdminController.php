@@ -869,7 +869,6 @@ class AdminController extends Controller
         return view('admin.edit-order', [
             'pageTitle' => 'Edit Order - ' . $order->order_number,
             'order' => $order,
-            'allSizeOptions' => $this->getOrderSizeOptions(),
         ]);
     }
 
@@ -941,8 +940,8 @@ class AdminController extends Controller
                         continue;
                     }
 
-                    if (in_array($selectedSize, $this->getOrderSizeOptions(), true)) {
-                        $item->update(['size' => $selectedSize]);
+                    if (trim((string) $selectedSize) !== '') {
+                        $item->update(['size' => trim($selectedSize)]);
                     }
                 }
 
@@ -1002,22 +1001,6 @@ class AdminController extends Controller
         }
 
         return $stock;
-    }
-
-    private function getOrderSizeOptions()
-    {
-        return Product::get()
-            ->flatMap(function ($product) {
-                return array_merge($product->available_sizes, $product->available_age_groups);
-            })
-            ->map(function ($size) {
-                return trim((string) $size);
-            })
-            ->filter()
-            ->unique()
-            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-            ->values()
-            ->all();
     }
 
     private function resolveProductType(Request $request)
