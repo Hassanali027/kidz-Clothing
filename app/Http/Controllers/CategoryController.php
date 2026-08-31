@@ -47,6 +47,7 @@ class CategoryController extends Controller
             'categories'      => $categories,
             'products'        => $products,
             'productTypes'    => $this->getProductTypes(),
+            'ageGroups'       => $this->getAgeGroups(),
             'categorySlug'    => null,
             'activeSize'      => $activeSize,
             'activeProductType' => $productType,
@@ -96,6 +97,7 @@ class CategoryController extends Controller
 
         $products = $productsQuery->orderBy('created_at', 'desc')->get();
         $productTypes = $this->getProductTypes();
+        $ageGroups = $this->getAgeGroups($category->name);
 
         // Database diagnostics log
         try {
@@ -142,6 +144,7 @@ class CategoryController extends Controller
             'categories'      => $categories,
             'products'        => $products,
             'productTypes'    => $productTypes,
+            'ageGroups'       => $ageGroups,
             'activeSize'      => $sizeFilter,
             'activeProductType' => $productType,
             'minPrice'        => $minPrice,
@@ -173,6 +176,22 @@ class CategoryController extends Controller
         return $defaultTypes
             ->merge($assignedTypes)
             ->unique()
+            ->values();
+    }
+
+    private function getAgeGroups(?string $categoryName = null)
+    {
+        $query = Product::where('status', 'active');
+
+        if ($categoryName !== null) {
+            $query->where('category', $categoryName);
+        }
+
+        return $query->pluck('age_group')
+            ->map(fn ($ageGroup) => trim((string) $ageGroup))
+            ->filter()
+            ->unique(fn ($ageGroup) => strtolower($ageGroup))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
     }
 }

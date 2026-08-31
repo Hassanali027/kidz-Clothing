@@ -192,11 +192,11 @@
                 </button>
                  <div class="cpd-acc-panel" id="cpd-panel-size">
                     <div class="cpd-cb-grid">
-                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && strtolower($activeSize) == 'new born') ? 'checked' : '' }}><span class="cpd-cb-label">New Born</span></label>
-                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && $activeSize == '0-2') ? 'checked' : '' }}><span class="cpd-cb-label">0-2</span></label>
-                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && $activeSize == '2-5') ? 'checked' : '' }}><span class="cpd-cb-label">2-5</span></label>
-                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && $activeSize == '5-8') ? 'checked' : '' }}><span class="cpd-cb-label">5-8</span></label>
-                        <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && $activeSize == '8-14') ? 'checked' : '' }}><span class="cpd-cb-label">8-14</span></label>
+                        @forelse(($ageGroups ?? collect()) as $ageGroup)
+                            <label class="cpd-cb-item"><input type="checkbox" class="cpd-cb" {{ (isset($activeSize) && strtolower($activeSize) === strtolower($ageGroup)) ? 'checked' : '' }}><span class="cpd-cb-label">{{ $ageGroup }}</span></label>
+                        @empty
+                            <span class="cpd-cb-label">No sizes available</span>
+                        @endforelse
                     </div>
                 </div>
             </div>
