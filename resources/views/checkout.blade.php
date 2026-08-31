@@ -309,7 +309,7 @@
                             <button type="submit" formaction="{{ route('checkout.applyCoupon') }}" formnovalidate style="border: 0; border-radius: 5px; background: #0288d1; color: #fff; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">Apply</button>
                         </div>
                         @guest
-                            <p style="font-size: 12px; color: #666; margin: 7px 0 0;">To use a coupon, please <a href="{{ route('login') }}" style="color: #0288d1; font-weight: 700;">log in</a> first.</p>
+                            <p style="font-size: 12px; color: #666; margin: 7px 0 0;">To use a coupon, enter the code and <button type="submit" formaction="{{ route('checkout.applyCoupon') }}" formnovalidate style="display: inline; border: 0; padding: 0; background: none; color: #0288d1; font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline;">log in</button> first.</p>
                         @endguest
                     </div>
 
