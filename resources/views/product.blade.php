@@ -364,7 +364,7 @@
 
                     <!-- Size -->
                     <div class="pd-option-group" id="pd-size-group">
-                        @php($sizes = $product->available_sizes)
+                        @php($sizes = $product->size ? $product->available_sizes : $product->available_age_groups)
                         @if($product->size)
                             <p class="pd-option-label">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
                         @else

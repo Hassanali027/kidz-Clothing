@@ -104,4 +104,17 @@ class Product extends Model
 
         return [$size];
     }
+
+    public function getAvailableAgeGroupsAttribute()
+    {
+        $ageGroups = trim((string) $this->age_group);
+
+        if ($ageGroups === '') {
+            return [];
+        }
+
+        return strpos($ageGroups, ',') !== false
+            ? array_values(array_filter(array_map('trim', explode(',', $ageGroups))))
+            : [$ageGroups];
+    }
 }

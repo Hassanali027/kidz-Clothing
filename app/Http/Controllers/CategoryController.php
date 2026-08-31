@@ -82,7 +82,12 @@ class CategoryController extends Controller
 
         // Apply size filter if provided
         if ($sizeFilter) {
-            $productsQuery->where('age_group', $sizeFilter);
+            $productsQuery->where(function ($query) use ($sizeFilter) {
+                $query->where('age_group', $sizeFilter)
+                    ->orWhere('age_group', 'like', $sizeFilter . ',%')
+                    ->orWhere('age_group', 'like', '%, ' . $sizeFilter . ',%')
+                    ->orWhere('age_group', 'like', '%, ' . $sizeFilter);
+            });
         }
 
         if ($productType) {
@@ -187,9 +192,10 @@ class CategoryController extends Controller
             $query->where('category', $categoryName);
         }
 
-        return $query->pluck('age_group')
-            ->map(fn ($ageGroup) => trim((string) $ageGroup))
-            ->filter()
+        return $query->get()
+            ->flatMap(function ($product) {
+                return $product->available_age_groups;
+            })
             ->unique(fn ($ageGroup) => strtolower($ageGroup))
             ->sort(SORT_NATURAL | SORT_FLAG_CASE)
             ->values();

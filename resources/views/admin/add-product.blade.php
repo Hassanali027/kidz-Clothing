@@ -54,7 +54,8 @@
                 </div>
                 <div class="form-group">
                     <label>Age Group</label>
-                    <input type="text" name="age_group" class="form-control" value="{{ old('age_group') }}" placeholder="e.g. 5-8" required>
+                    <input type="text" name="age_group" class="form-control" value="{{ old('age_group') }}" placeholder="e.g. 2-5, 5-8, 8-10" required>
+                    <small style="color: #666;">For multiple age groups, separate each option with a comma.</small>
                 </div>
             </div>
 

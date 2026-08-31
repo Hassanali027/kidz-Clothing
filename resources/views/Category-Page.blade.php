@@ -316,8 +316,8 @@
                        data-name="{{ strtolower($product->name) }}"
                        data-price="{{ $product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price }}"
                        data-created="{{ strtotime($product->created_at) }}"
-                       data-age-group="{{ strtolower($product->age_group ?? '') }}"
-                       data-size="{{ strtolower(($product->age_group ?? '') . ' ' . ($product->size ?? '')) }}"
+                       data-age-group="{{ strtolower(implode(',', $product->available_age_groups)) }}"
+                       data-size="{{ strtolower(implode(',', $product->available_age_groups) . ' ' . ($product->size ?? '')) }}"
                        data-type="{{ strtolower($product->category ?? '') }}"
                        data-product-type="{{ strtolower($product->product_type ?? '') }}"
                        data-stock="{{ $product->stock_quantity > 0 ? 'in-stock' : 'out-of-stock' }}"
@@ -702,7 +702,7 @@
                     var match = activeSizes.some(function(s) {
                         // First try: exact match against age_group from DB
                         var filterNorm = normalizeFilterValue(s);
-                        if (ageGroup !== '' && ageGroup === filterNorm) return true;
+                        if (ageGroup !== '' && ageGroup.split(',').map(normalizeFilterValue).indexOf(filterNorm) !== -1) return true;
                         // Second try: fuzzy match against full size string
                         return matchSizeRange(sizeStr, filterNorm);
                     });
