@@ -93,38 +93,38 @@
         border-top: none;
     }
     .pd-main-img {
-        height: 320px;
+        height: clamp(245px, 78vw, 290px);
         object-fit: cover;
         object-position: top center;
     }
     .pd-thumbs {
         flex-direction: row;
         overflow-x: auto;
-        gap: 8px;
-        padding: 10px 16px;
-        background: #fafafa;
+        gap: 7px;
+        padding: 8px 14px;
+        background: #fff;
         border-bottom: 1px solid #eee;
         scrollbar-width: none;
     }
     .pd-thumbs::-webkit-scrollbar { display:none; }
     .pd-thumb {
-        flex: 0 0 60px;
-        width: 60px;
-        height: 60px;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
     }
     .pd-zoom-btn { display:none; }
 
     /* Info panel */
     .pd-info {
-        gap: 14px;
+        gap: 12px;
         width: 100%;
-        padding: 20px 20px 0;
+        padding: 16px 16px 0;
     }
     .pd-title-row {
         align-items: flex-start;
         gap: 8px;
     }
-    .pd-title { font-size: 17px; line-height: 1.35; }
+    .pd-title { font-size: 18px; line-height: 1.3; }
     .pd-stock { font-size: 12px; padding: 3px 9px; flex-shrink: 0; }
     .pd-price-new { font-size: 20px; }
     .pd-price-old { font-size: 14px; }
@@ -139,7 +139,7 @@
         overflow: hidden;
     }
     .pd-color-size-row .pd-option-group {
-        padding: 12px 14px;
+        padding: 12px;
         border: none;
     }
     .pd-color-size-row .pd-option-group:first-child {
@@ -147,13 +147,16 @@
     }
 
     /* Options */
-    .pd-option-label { font-size: 13px; margin-bottom: 8px; }
+    .pd-option-label { font-size: 12px; margin-bottom: 7px; }
     .pd-size-header { flex-direction: column; align-items: flex-start; gap: 4px; }
     .pd-size-guide { font-size: 11px; }
     .pd-sizes { gap: 5px; flex-wrap: wrap; }
     .pd-size-btn { padding: 4px 10px; font-size: 12px; }
     .pd-colors { gap: 6px; flex-wrap: wrap; }
     .pd-color-swatch { width: 26px; height: 26px; }
+
+    /* Keep the floating chat button from covering product controls on small screens. */
+    .pd-section ~ .whatsapp-float { display: none; }
 
     /* Quantity */
     .pd-qty-wrap { border-radius: 8px; }
