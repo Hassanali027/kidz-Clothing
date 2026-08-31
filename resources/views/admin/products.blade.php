@@ -75,7 +75,6 @@
                                     </a>
                                     <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display: inline;" class="delete-form">
                                         @csrf
-                                        @method('DELETE')
                                         <button type="button" class="delete-btn" style="background: none; border: none; color: #f87171; cursor: pointer; padding: 0;" title="Delete">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
