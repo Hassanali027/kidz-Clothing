@@ -140,6 +140,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
 
     // Users Management Route
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/users/{id}/orders', [AdminController::class, 'userOrderHistory'])->name('users.orders');
     Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('users.edit');
     Route::post('/users/{id}/update', [AdminController::class, 'updateUser'])->name('users.update');
     Route::post('/users/{id}/delete', [AdminController::class, 'deleteUser'])->name('users.delete');

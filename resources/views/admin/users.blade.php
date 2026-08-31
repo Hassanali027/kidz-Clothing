@@ -28,6 +28,9 @@
                             <td>{{ $user->created_at->format('M d, Y h:i A') }}</td>
                             <td>
                                 <div class="action-btns" style="display: flex;">
+                                    <a href="{{ route('admin.users.orders', $user->id) }}" class="btn-action" style="background: #7c3aed;" title="View Order History">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </a>
                                     <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-action btn-edit" title="Edit User">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>

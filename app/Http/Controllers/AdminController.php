@@ -553,6 +553,18 @@ class AdminController extends Controller
         ]);
     }
 
+    public function userOrderHistory($id)
+    {
+        $user = User::with(['orders' => function ($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->findOrFail($id);
+
+        return view('admin.user-orders', [
+            'pageTitle' => $user->name . ' Order History',
+            'user' => $user,
+        ]);
+    }
+
     public function updateUser(Request $request, $id)
     {
         try {
