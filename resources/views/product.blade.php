@@ -365,11 +365,7 @@
                     <!-- Size -->
                     <div class="pd-option-group" id="pd-size-group">
                         @php($sizes = $product->size ? $product->available_sizes : $product->available_age_groups)
-                        @if($product->size)
-                            <p class="pd-option-label">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
-                        @else
-                            <p class="pd-option-label">Age: <strong id="pd-size-val">{{ $product->age_group ?? 'Standard' }}</strong></p>
-                        @endif
+                        <p class="pd-option-label" style="display: none;">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
                         {{-- Size Guide link temporarily disabled --}}
                         <div class="pd-sizes" style="margin-top:8px;">
                             @foreach($sizes as $index => $size)
