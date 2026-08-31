@@ -298,6 +298,9 @@
                         <div class="order-item-details">
                             <div class="order-item-name">{{ $item['name'] }}</div>
                             <div class="order-item-price">Qty: {{ $item['quantity'] }} × Rs {{ number_format($item['price']) }}</div>
+                            @if(!empty($item['size']))
+                                <div class="order-item-price">Size: {{ $item['size'] }}</div>
+                            @endif
                         </div>
                     </div>
                     @endforeach
