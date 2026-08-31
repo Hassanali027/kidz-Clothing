@@ -2,7 +2,15 @@
      Reviews / Testimonials Section
 ════════════════════════════════ -->
 @php
-    $testimonials = \App\Models\Testimonial::where('is_active', true)
+    $testimonialsQuery = \App\Models\Testimonial::where('is_active', true);
+
+    if (isset($product)) {
+        $testimonialsQuery->where('product_id', $product->id);
+    } else {
+        $testimonialsQuery->whereNull('product_id');
+    }
+
+    $testimonials = $testimonialsQuery
         ->orderBy('sort_order')
         ->orderBy('created_at', 'desc')
         ->get();

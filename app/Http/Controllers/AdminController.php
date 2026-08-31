@@ -21,7 +21,8 @@ class AdminController extends Controller
     public function testimonials()
     {
         return view('admin.testimonials', [
-            'testimonials' => Testimonial::orderBy('sort_order')->orderBy('created_at', 'desc')->get(),
+            'testimonials' => Testimonial::with('product')->orderBy('sort_order')->orderBy('created_at', 'desc')->get(),
+            'products' => Product::orderBy('name')->get(),
         ]);
     }
 
@@ -32,10 +33,12 @@ class AdminController extends Controller
             'review_text' => 'required|string|max:1000',
             'rating' => 'required|integer|min:1|max:5',
             'sort_order' => 'nullable|integer|min:0',
+            'product_id' => 'nullable|exists:products,id',
         ]);
 
         Testimonial::create([
             'name' => $request->name,
+            'product_id' => $request->product_id ?: null,
             'review_text' => $request->review_text,
             'rating' => $request->rating,
             'sort_order' => $request->sort_order ?? 0,
