@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
 use App\Models\Testimonial;
+use App\Models\ProductReview;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,6 +19,20 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    public function productReviews()
+    {
+        return view('admin.product-reviews', ['reviews' => ProductReview::with(['product', 'user'])->latest()->get()]);
+    }
+    public function approveProductReview($id)
+    {
+        ProductReview::findOrFail($id)->update(['status' => 'approved']);
+        return back()->with('success', 'Review approved.');
+    }
+    public function deleteProductReview($id)
+    {
+        ProductReview::findOrFail($id)->delete();
+        return back()->with('success', 'Review deleted.');
+    }
     public function testimonials()
     {
         return view('admin.testimonials', [

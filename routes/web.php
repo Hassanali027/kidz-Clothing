@@ -62,6 +62,7 @@ Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
+Route::post('/products/{product}/reviews', [\App\Http\Controllers\ProductReviewController::class, 'store'])->middleware('auth')->name('products.reviews.store');
 
 // Authentication
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -128,6 +129,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::post('/testimonials', [AdminController::class, 'storeTestimonial'])->name('testimonials.store');
     Route::post('/testimonials/{id}/toggle', [AdminController::class, 'toggleTestimonial'])->name('testimonials.toggle');
     Route::post('/testimonials/{id}/delete', [AdminController::class, 'deleteTestimonial'])->name('testimonials.delete');
+    Route::get('/product-reviews', [AdminController::class, 'productReviews'])->name('productReviews');
+    Route::post('/product-reviews/{id}/approve', [AdminController::class, 'approveProductReview'])->name('productReviews.approve');
+    Route::post('/product-reviews/{id}/delete', [AdminController::class, 'deleteProductReview'])->name('productReviews.delete');
     
     Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs');
     Route::get('/blogs/add', [AdminBlogController::class, 'create'])->name('blogs.add');

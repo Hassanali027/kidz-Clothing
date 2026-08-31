@@ -623,6 +623,27 @@
 
 
     {{-- Testimonials Section --}}
+    @php($approvedReviews = \App\Models\ProductReview::where('product_id', $product->id)->where('status', 'approved')->with('user')->latest()->get())
+    <section style="max-width:1100px;margin:40px auto;padding:0 40px;">
+        <h2 style="font-size:20px;margin-bottom:18px;">Product Reviews</h2>
+        @if(session('success'))<div style="background:#d4edda;color:#155724;padding:12px;border-radius:6px;margin-bottom:16px;">{{ session('success') }}</div>@endif
+        @auth
+            <form action="{{ route('products.reviews.store', $product) }}" method="POST" style="border:1px solid #eee;padding:18px;border-radius:8px;margin-bottom:20px;">
+                @csrf
+                <strong>Write a Review</strong>
+                <select name="rating" style="margin:0 10px;padding:7px;">@for($rating=5;$rating>=1;$rating--)<option value="{{ $rating }}">{{ $rating }} Stars</option>@endfor</select>
+                <textarea name="review_text" required maxlength="1000" placeholder="Share your experience with this product" style="display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:5px;min-height:80px;"></textarea>
+                <button type="submit" style="margin-top:10px;background:#29b6f6;color:#fff;border:0;padding:10px 16px;border-radius:5px;font-weight:700;cursor:pointer;">Submit Review</button>
+            </form>
+        @else
+            <p style="margin-bottom:20px;"><a href="{{ route('login') }}" style="color:#0288d1;font-weight:700;">Log in</a> to write a review.</p>
+        @endauth
+        @forelse($approvedReviews as $review)
+            <div style="border-bottom:1px solid #eee;padding:14px 0;"><strong>{{ $review->user->name }}</strong> <span style="color:#fbbf24;">{{ str_repeat('★', $review->rating) }}</span><p style="margin:7px 0 0;">{{ $review->review_text }}</p></div>
+        @empty
+            <p style="color:#666;">No approved reviews yet.</p>
+        @endforelse
+    </section>
     @include('partials.testimonials')
     
     <!-- ════════════════════════════════
