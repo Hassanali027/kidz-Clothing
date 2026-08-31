@@ -55,13 +55,7 @@
                 </div>
                 <div class="form-group">
                     <label>Age Group</label>
-                    <select name="age_group" class="form-control" required>
-                        <option value="">Select Age Group</option>
-                        <option value="0-2" {{ old('age_group', $product->age_group) == '0-2' ? 'selected' : '' }}>0-2 Years</option>
-                        <option value="2-5" {{ old('age_group', $product->age_group) == '2-5' ? 'selected' : '' }}>2-5 Years</option>
-                        <option value="5-8" {{ old('age_group', $product->age_group) == '5-8' ? 'selected' : '' }}>5-8 Years</option>
-                        <option value="8-14" {{ old('age_group', $product->age_group) == '8-14' ? 'selected' : '' }}>8-14 Years</option>
-                    </select>
+                    <input type="text" name="age_group" class="form-control" value="{{ old('age_group', $product->age_group) }}" placeholder="e.g. 5-8" required>
                 </div>
             </div>
 

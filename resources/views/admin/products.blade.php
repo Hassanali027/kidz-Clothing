@@ -50,7 +50,7 @@
                                 </td>
                                 <td><strong>{{ $product->name }}</strong></td>
                                 <td>{{ ucfirst($product->category) }} Wear</td>
-                                <td>{{ $product->age_group }} Years</td>
+                                <td>{{ $product->age_group }}</td>
                                 <td>
                                     @if($product->sale_price)
                                         <span style="text-decoration: line-through; color: #94a3b8; font-size: 13px;">Rs. {{ number_format($product->price, 0) }}</span><br>
