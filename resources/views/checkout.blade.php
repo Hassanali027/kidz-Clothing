@@ -279,14 +279,20 @@
         const onlineDetails = document.getElementById('online-payment-details');
         const discountLabel = document.getElementById('discount-label');
 
-        const discountPercent = couponDiscountPercent || (method === 'online' ? 5 : 0);
+        const discountPercent = couponDiscountPercent + (method === 'online' ? 5 : 0);
 
         if (discountPercent > 0) {
             const discount = Math.round(totalAmount * discountPercent) / 100;
             const final = totalAmount - discount;
             
             discountRow.style.display = 'flex';
-            discountLabel.textContent = 'Discount (' + discountPercent + '%):';
+            if (couponDiscountPercent > 0 && method === 'online') {
+                discountLabel.textContent = 'Coupon (' + couponDiscountPercent + '%) + Online Payment (5%):';
+            } else if (couponDiscountPercent > 0) {
+                discountLabel.textContent = 'Coupon Discount (' + couponDiscountPercent + '%):';
+            } else {
+                discountLabel.textContent = 'Online Payment Discount (5%):';
+            }
             discountAmountEl.textContent = discount.toLocaleString();
             finalTotalEl.textContent = final.toLocaleString();
             

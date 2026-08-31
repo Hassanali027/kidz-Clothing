@@ -120,8 +120,8 @@ class CheckoutController extends Controller
                         throw new \RuntimeException('This 10% coupon has already been used with your email address.');
                     }
 
-                    // A coupon replaces the online-payment discount; the discounts never stack.
-                    $discountPercent = $coupon->discount_percent;
+                    // Coupon and online-payment discounts are both applied.
+                    $discountPercent += $coupon->discount_percent;
                 }
 
                 $discount = round($total * ($discountPercent / 100), 2);
