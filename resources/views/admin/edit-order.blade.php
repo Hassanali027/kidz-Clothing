@@ -56,6 +56,7 @@
                         @foreach($order->items as $item)
                             @php
                                 $sizeOptions = $item->product ? $item->product->available_sizes : [$item->size];
+                                $sizeOptions = array_values(array_unique(array_merge($sizeOptions, $allSizeOptions)));
                                 if ($item->size && !in_array($item->size, $sizeOptions, true)) $sizeOptions[] = $item->size;
                             @endphp
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
