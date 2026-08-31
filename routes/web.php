@@ -122,6 +122,12 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::post('/coupons', [AdminController::class, 'storeCoupon'])->name('coupons.store');
     Route::post('/coupons/{id}/toggle', [AdminController::class, 'toggleCoupon'])->name('coupons.toggle');
     Route::post('/coupons/{id}/delete', [AdminController::class, 'deleteCoupon'])->name('coupons.delete');
+
+    // Customer Review Management Routes
+    Route::get('/testimonials', [AdminController::class, 'testimonials'])->name('testimonials');
+    Route::post('/testimonials', [AdminController::class, 'storeTestimonial'])->name('testimonials.store');
+    Route::post('/testimonials/{id}/toggle', [AdminController::class, 'toggleTestimonial'])->name('testimonials.toggle');
+    Route::post('/testimonials/{id}/delete', [AdminController::class, 'deleteTestimonial'])->name('testimonials.delete');
     
     Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs');
     Route::get('/blogs/add', [AdminBlogController::class, 'create'])->name('blogs.add');

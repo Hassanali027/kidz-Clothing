@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
+use App\Models\Testimonial;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +18,47 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    public function testimonials()
+    {
+        return view('admin.testimonials', [
+            'testimonials' => Testimonial::orderBy('sort_order')->orderBy('created_at', 'desc')->get(),
+        ]);
+    }
+
+    public function storeTestimonial(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'review_text' => 'required|string|max:1000',
+            'rating' => 'required|integer|min:1|max:5',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        Testimonial::create([
+            'name' => $request->name,
+            'review_text' => $request->review_text,
+            'rating' => $request->rating,
+            'sort_order' => $request->sort_order ?? 0,
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('admin.testimonials')->with('success', 'Review added successfully.');
+    }
+
+    public function toggleTestimonial($id)
+    {
+        $testimonial = Testimonial::findOrFail($id);
+        $testimonial->update(['is_active' => !$testimonial->is_active]);
+
+        return redirect()->route('admin.testimonials')->with('success', 'Review visibility updated.');
+    }
+
+    public function deleteTestimonial($id)
+    {
+        Testimonial::findOrFail($id)->delete();
+        return redirect()->route('admin.testimonials')->with('success', 'Review deleted successfully.');
+    }
+
     public function coupons()
     {
         return view('admin.coupons', [

@@ -92,6 +92,12 @@
                     </a>
                 </li>
                 <li class="menu-item">
+                    <a href="{{ route('admin.testimonials') }}" class="menu-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-star"></i>
+                        <span>Customer Reviews</span>
+                    </a>
+                </li>
+                <li class="menu-item">
                     <a href="{{ route('admin.blogs') }}" class="menu-link {{ request()->routeIs('admin.blogs') ? 'active' : '' }}">
                         <i class="fa-solid fa-blog"></i>
                         <span>Blogs Section</span>
