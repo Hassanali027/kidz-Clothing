@@ -822,7 +822,9 @@ class AdminController extends Controller
         try {
             $order = DB::transaction(function () use ($request, $id) {
                 $order = Order::with('items')->lockForUpdate()->findOrFail($id);
-                $couponCode = strtoupper(trim((string) $request->coupon_code));
+                $couponCode = $request->boolean('remove_coupon')
+                    ? ''
+                    : strtoupper(trim((string) $request->coupon_code));
                 $coupon = null;
 
                 if ($couponCode !== '') {

@@ -54,6 +54,12 @@
                     <label>Coupon Code (Optional)</label>
                     <input name="coupon_code" class="form-control" value="{{ old('coupon_code', $order->coupon_code) }}" placeholder="Enter an active coupon code, or clear to remove it" style="text-transform: uppercase;">
                     <small style="display: block; color: #666; margin-top: 6px;">The discount and order total will be calculated again when you save.</small>
+                    @if($order->coupon_code)
+                        <label style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; color: #dc2626; font-weight: 700; cursor: pointer;">
+                            <input type="checkbox" name="remove_coupon" value="1" onchange="document.querySelector('[name=coupon_code]').disabled = this.checked;">
+                            Remove coupon from this order
+                        </label>
+                    @endif
                 </div>
             </div>
 
