@@ -507,7 +507,12 @@
                     var ageInput = document.querySelector('input[name="age_group"]');
                     var editor = document.querySelector('.age-stock-editor');
                     var hiddenInput = document.querySelector('.age-stock-input');
-                    var stored = JSON.parse(editor.dataset.stock || '{}');
+                    var stored = {};
+                    try {
+                        stored = JSON.parse(editor.dataset.stock || '{}');
+                    } catch (error) {
+                        stored = {};
+                    }
 
                     function renderStockFields() {
                         var ages = ageInput.value.split(',').map(function (age) { return age.trim(); }).filter(Boolean);
