@@ -23,6 +23,36 @@ use App\Http\Controllers\CheckoutController;
 |
 */
 
+// Search engine access: public pages are crawlable, admin pages are excluded.
+Route::get('/robots.txt', function (\Illuminate\Http\Request $request) {
+    $baseUrl = $request->getSchemeAndHttpHost();
+    $content = "User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: {$baseUrl}/sitemap.xml\n";
+
+    return response($content, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+})->name('robots');
+
+Route::get('/sitemap.xml', function (\Illuminate\Http\Request $request) {
+    $baseUrl = $request->getSchemeAndHttpHost();
+    $urls = collect([
+        ['loc' => $baseUrl . '/', 'lastmod' => null],
+        ['loc' => $baseUrl . '/about-us', 'lastmod' => null],
+        ['loc' => $baseUrl . '/products', 'lastmod' => null],
+        ['loc' => $baseUrl . '/categories', 'lastmod' => null],
+        ['loc' => $baseUrl . '/blog', 'lastmod' => null],
+        ['loc' => $baseUrl . '/contact-us', 'lastmod' => null],
+        ['loc' => $baseUrl . '/faqs', 'lastmod' => null],
+    ])->merge(
+        \App\Models\Product::where('status', 'active')->get()->map(function ($product) use ($baseUrl) {
+            return [
+                'loc' => $baseUrl . '/products/' . $product->slug,
+                'lastmod' => optional($product->updated_at)->toDateString(),
+            ];
+        })
+    );
+
+    return response()->view('sitemap', compact('urls'), 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+})->name('sitemap');
+
 // Home Page
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
