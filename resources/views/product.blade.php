@@ -14,9 +14,12 @@
 .pd-thumb { width:72px; height:72px; border:2px solid #eee; border-radius:6px; overflow:hidden; padding:0; cursor:pointer; background:none; transition:border-color 0.2s; }
 .pd-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 .pd-thumb--active,.pd-thumb:hover { border-color:#29b6f6; }
-.pd-main-img-wrap { position:relative; flex:1; border-radius:10px; overflow:hidden; border:1px solid #eee; line-height:0; }
+.pd-main-img-wrap { position:relative; flex:1; border-radius:10px; overflow:hidden; border:1px solid #eee; line-height:0; cursor:zoom-in; }
 .pd-main-img { width:100%; height:auto; object-fit:cover; object-position:top center; display:block; transition:transform 0.4s ease; }
 .pd-main-img-wrap:hover .pd-main-img { transform:scale(1.04); }
+@media (hover:hover) and (min-width:601px) {
+    .pd-main-img-wrap:hover .pd-main-img { transform:scale(1.65); }
+}
 .pd-zoom-btn { position:absolute; bottom:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid #ddd; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#444; transition:background 0.2s; }
 .pd-zoom-btn:hover { background:#fff; color:#29b6f6; }
 .pd-info { flex:1; display:flex; flex-direction:column; gap:16px; }
@@ -99,6 +102,8 @@
         object-fit: contain;
         object-position: center;
     }
+    .pd-main-img-wrap { cursor: default; }
+    .pd-main-img-wrap:hover .pd-main-img { transform: none; }
     .pd-thumbs {
         flex-direction: row;
         overflow-x: auto;
@@ -470,6 +475,24 @@
             });
             btn.classList.add('pd-thumb--active');
         }
+
+        // ── Desktop image hover zoom ──
+        (function () {
+            var imageWrap = document.querySelector('.pd-main-img-wrap');
+            var image = document.getElementById('pd-main-img');
+            if (!imageWrap || !image || !window.matchMedia('(hover: hover) and (min-width: 601px)').matches) return;
+
+            imageWrap.addEventListener('mousemove', function (event) {
+                var bounds = imageWrap.getBoundingClientRect();
+                var x = ((event.clientX - bounds.left) / bounds.width) * 100;
+                var y = ((event.clientY - bounds.top) / bounds.height) * 100;
+                image.style.transformOrigin = x + '% ' + y + '%';
+            });
+
+            imageWrap.addEventListener('mouseleave', function () {
+                image.style.transformOrigin = 'center center';
+            });
+        })();
 
         // ── Color swatches ──
         document.querySelectorAll('.pd-color-swatch').forEach(function(btn) {
