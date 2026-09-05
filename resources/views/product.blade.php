@@ -94,9 +94,10 @@
         border-top: none;
     }
     .pd-main-img {
-        height: clamp(245px, 78vw, 290px);
-        object-fit: cover;
-        object-position: top center;
+        height: auto;
+        max-height: none;
+        object-fit: contain;
+        object-position: center;
     }
     .pd-thumbs {
         flex-direction: row;
