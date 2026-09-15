@@ -478,63 +478,6 @@
         </div>
     </section>
 
-    <!-- ════════════════════════════════
-         Shop by Age Section
-    ════════════════════════════════ -->
-    <section class="sba-section">
-
-        <div class="sba-heading">
-            <span class="sba-line"></span>
-            <h2>Shop by Age</h2>
-            <span class="sba-line"></span>
-        </div>
-
-        <div class="sba-grid">
-
-            <!-- Left tall card: 0-2 Years -->
-            <a href="{{ route('categories.index', ['size' => 'Newborn']) }}" class="sba-card sba-card--tall" id="sba-0-2">
-                @if($shopByAge['0-2']->isNotEmpty())
-                    <img src="{{ asset($shopByAge['0-2']->first()->images[0] ?? 'images/img-home/0-2year.jpg') }}" alt="0-2 Years">
-                @else
-                    <img src="{{ asset('images/img-home/0-2year.jpg') }}" alt="0-2 Years">
-                @endif
-                <div class="sba-label">0–2 Years</div>
-            </a>
-
-            <!-- Top right wide card: 2-5 Years -->
-            <a href="{{ route('categories.index', ['size' => '2-4Y']) }}" class="sba-card sba-card--wide" id="sba-2-5">
-                @if($shopByAge['2-5']->isNotEmpty())
-                    <img src="{{ asset($shopByAge['2-5']->first()->images[0] ?? 'images/img-home/2-5year.jpg') }}" alt="2-5 Years">
-                @else
-                    <img src="{{ asset('images/img-home/2-5year.jpg') }}" alt="2-5 Years">
-                @endif
-                <div class="sba-label">2–5 Years</div>
-            </a>
-
-            <!-- Bottom right left: 5-8 Years -->
-            <a href="{{ route('categories.index', ['size' => '6-8Y']) }}" class="sba-card" id="sba-5-8">
-                @if($shopByAge['5-8']->isNotEmpty())
-                    <img src="{{ asset($shopByAge['5-8']->first()->images[0] ?? 'images/img-home/5-8year.jpg') }}" alt="5-8 Years">
-                @else
-                    <img src="{{ asset('images/img-home/5-8year.jpg') }}" alt="5-8 Years">
-                @endif
-                <div class="sba-label">5–8 Years</div>
-            </a>
-
-            <!-- Bottom right right: 8-14 Years -->
-            <a href="{{ route('categories.index', ['size' => '8-10Y']) }}" class="sba-card" id="sba-8-14">
-                @if($shopByAge['8-14']->isNotEmpty())
-                    <img src="{{ asset($shopByAge['8-14']->first()->images[0] ?? 'images/img-home/8-14year.jpg') }}" alt="8-14 Years">
-                @else
-                    <img src="{{ asset('images/img-home/8-14year.jpg') }}" alt="8-14 Years">
-                @endif
-                <div class="sba-label">8–14 Years</div>
-            </a>
-
-        </div>
-
-    </section>
-
     {{-- Testimonials Section --}}
     @include('partials.testimonials')
 
