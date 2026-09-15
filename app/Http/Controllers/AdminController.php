@@ -878,6 +878,29 @@ class AdminController extends Controller
         ]);
     }
 
+    public function printOrders(Request $request)
+    {
+        $orderIds = collect(explode(',', (string) $request->query('ids', '')))
+            ->filter(function ($id) { return ctype_digit($id); })
+            ->map(function ($id) { return (int) $id; })
+            ->unique()
+            ->values();
+
+        abort_if($orderIds->isEmpty(), 404);
+
+        $orders = Order::with('items')
+            ->whereIn('id', $orderIds)
+            ->get()
+            ->sortBy(function ($order) use ($orderIds) {
+                return $orderIds->search($order->id);
+            })
+            ->values();
+
+        abort_if($orders->isEmpty(), 404);
+
+        return view('admin.print-orders', compact('orders'));
+    }
+
     public function editOrder($id)
     {
         $order = Order::with('items.product')->findOrFail($id);

@@ -35,6 +35,9 @@
             @if($selectedCategory)
                 <a href="{{ route('admin.orders') }}" class="btn-secondary" style="text-decoration: none; padding: 10px 14px;">Clear Filter</a>
             @endif
+            <button type="button" id="print-selected-orders" class="btn-primary" disabled style="padding: 10px 14px;">
+                <i class="fa-solid fa-print"></i> Print Selected (0)
+            </button>
         </form>
         
         <div class="table-responsive">
@@ -161,16 +164,32 @@
         (function () {
             var selectAll = document.getElementById('select-all-orders');
             var selectors = Array.prototype.slice.call(document.querySelectorAll('.order-selector'));
+            var printButton = document.getElementById('print-selected-orders');
             if (!selectAll) return;
+
+            function updatePrintButton() {
+                var selectedCount = selectors.filter(function (checkbox) { return checkbox.checked; }).length;
+                printButton.disabled = selectedCount === 0;
+                printButton.innerHTML = '<i class="fa-solid fa-print"></i> Print Selected (' + selectedCount + ')';
+            }
 
             selectAll.addEventListener('change', function () {
                 selectors.forEach(function (checkbox) { checkbox.checked = selectAll.checked; });
+                updatePrintButton();
             });
 
             selectors.forEach(function (checkbox) {
                 checkbox.addEventListener('change', function () {
                     selectAll.checked = selectors.length > 0 && selectors.every(function (item) { return item.checked; });
+                    updatePrintButton();
                 });
+            });
+
+            printButton.addEventListener('click', function () {
+                var selectedIds = selectors.filter(function (checkbox) { return checkbox.checked; })
+                    .map(function (checkbox) { return checkbox.value; });
+                if (!selectedIds.length) return;
+                window.open('{{ route('admin.orders.print') }}?ids=' + encodeURIComponent(selectedIds.join(',')), '_blank');
             });
         })();
     </script>
@@ -203,6 +222,7 @@
         .new-order-row td:first-child { border-left: 4px solid #f59e0b; }
         .new-order-flag { display: inline-block; margin: 7px 0 0; padding: 3px 7px; background: #f59e0b; color: #fff; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
         #select-all-orders, .order-selector { width: 17px; height: 17px; accent-color: #f06292; cursor: pointer; vertical-align: middle; }
+        #print-selected-orders:disabled { opacity: 0.55; cursor: not-allowed; }
         
         .admin-table {
             width: 100%;
