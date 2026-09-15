@@ -853,6 +853,7 @@ class AdminController extends Controller
             $selectedCategory = '';
         }
 
+        $newOrdersCount = Order::where('is_new', true)->count();
         $orders = Order::when($selectedCategory, function ($query) use ($selectedCategory) {
                 $query->where('workflow_category', $selectedCategory);
             })
@@ -864,6 +865,7 @@ class AdminController extends Controller
             'orders' => $orders,
             'categories' => $categories,
             'selectedCategory' => $selectedCategory,
+            'newOrdersCount' => $newOrdersCount,
         ]);
     }
 
@@ -947,6 +949,7 @@ class AdminController extends Controller
                     'coupon_code' => $coupon ? $coupon->code : null,
                     'discount_amount' => $discountAmount,
                     'total_amount' => $subtotal - $discountAmount + $shippingCharge,
+                    'is_new' => false,
                 ]));
 
                 foreach ($request->input('item_sizes', []) as $itemId => $selectedSize) {
@@ -996,7 +999,7 @@ class AdminController extends Controller
             ]);
 
             $order = Order::findOrFail($id);
-            $order->update(['status' => $request->status]);
+            $order->update(['status' => $request->status, 'is_new' => false]);
 
             return redirect()->back()->with('success', 'Order status updated successfully!');
         } catch (\Exception $e) {

@@ -147,7 +147,8 @@ class CheckoutController extends Controller
                     'discount_amount' => $discount,
                     'total_amount' => $finalTotal,
                     'payment_method' => $request->payment_method ?? 'cod',
-                    'status' => 'pending'
+                    'status' => 'pending',
+                    'is_new' => true,
                 ]);
 
                 foreach ($cart as $productId => $item) {

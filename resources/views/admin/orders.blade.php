@@ -14,6 +14,14 @@
             <h2>Recent Orders</h2>
         </div>
 
+        @if($newOrdersCount > 0)
+            <div class="new-orders-notice">
+                <i class="fa-solid fa-bell"></i>
+                <strong>{{ $newOrdersCount }} New {{ $newOrdersCount === 1 ? 'Order' : 'Orders' }}</strong>
+                <span>awaiting your review</span>
+            </div>
+        @endif
+
         <form method="GET" action="{{ route('admin.orders') }}" style="display: flex; align-items: end; gap: 12px; flex-wrap: wrap; margin: 0 0 20px;">
             <div class="form-group" style="margin: 0; min-width: 240px;">
                 <label for="order-category-filter">Filter by Order Category</label>
@@ -45,8 +53,11 @@
                 </thead>
                 <tbody>
                     @forelse($orders as $order)
-                        <tr>
-                            <td><strong>{{ $order->order_number }}</strong></td>
+                        <tr class="{{ $order->is_new ? 'new-order-row' : '' }}">
+                            <td>
+                                <strong>{{ $order->order_number }}</strong>
+                                @if($order->is_new)<span class="new-order-flag">NEW</span>@endif
+                            </td>
                             <td>{{ $order->first_name }} {{ $order->last_name }}<br><small>{{ $order->phone }}</small></td>
                             <td>{{ $order->city }}</td>
                             <td>Rs {{ number_format($order->total_amount) }}</td>
@@ -167,6 +178,12 @@
         .status-hold { background: #fff7d6; color: #a16207; border-color: #fde68a; }
         .status-cancelled { background: #ffebee; color: #f44336; border-color: #ffcdd2; }
         .order-category-badge { display: inline-block; padding: 6px 10px; background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .new-orders-notice { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 12px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; color: #047857; }
+        .new-orders-notice i { color: #f59e0b; }
+        .new-orders-notice span { color: #4b5563; font-size: 13px; }
+        .new-order-row { background: #fffbeb; }
+        .new-order-row td:first-child { border-left: 4px solid #f59e0b; }
+        .new-order-flag { display: inline-block; margin: 7px 0 0; padding: 3px 7px; background: #f59e0b; color: #fff; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
         
         .admin-table {
             width: 100%;

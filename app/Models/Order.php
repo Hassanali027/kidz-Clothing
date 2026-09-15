@@ -38,6 +38,7 @@ class Order extends Model
         'payment_method',
         'status',
         'workflow_category',
+        'is_new',
     ];
 
     public static function workflowCategories(): array
