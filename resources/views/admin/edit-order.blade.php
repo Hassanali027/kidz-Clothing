@@ -51,6 +51,15 @@
                     </select>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Order Category</label>
+                    <select name="workflow_category" class="form-control" required>
+                        @foreach(\App\Models\Order::workflowCategories() as $value => $label)
+                            <option value="{{ $value }}" {{ old('workflow_category', $order->workflow_category ?: 'new_order') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <small style="display: block; color: #666; margin-top: 6px;">Use this category to organize and filter orders in Order Management.</small>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Ordered Product Sizes</label>
                     <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                         @foreach($order->items as $item)

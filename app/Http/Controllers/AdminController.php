@@ -844,12 +844,26 @@ class AdminController extends Controller
     // Order Management Functions
     // ============================================
 
-    public function orderList()
+    public function orderList(Request $request)
     {
-        $orders = Order::orderBy('created_at', 'desc')->get();
+        $categories = Order::workflowCategories();
+        $selectedCategory = (string) $request->query('category', '');
+
+        if (!array_key_exists($selectedCategory, $categories)) {
+            $selectedCategory = '';
+        }
+
+        $orders = Order::when($selectedCategory, function ($query) use ($selectedCategory) {
+                $query->where('workflow_category', $selectedCategory);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('admin.orders', [
             'pageTitle' => 'Order Management',
-            'orders' => $orders
+            'orders' => $orders,
+            'categories' => $categories,
+            'selectedCategory' => $selectedCategory,
         ]);
     }
 
@@ -882,6 +896,7 @@ class AdminController extends Controller
             'phone' => 'required|string|max:50',
             'payment_method' => 'required|in:cod,online',
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'workflow_category' => 'required|in:' . implode(',', array_keys(Order::workflowCategories())),
             'coupon_code' => 'nullable|string|max:50',
             'item_sizes' => 'nullable|array',
             'item_sizes.*' => 'nullable|string|max:255',
@@ -927,7 +942,7 @@ class AdminController extends Controller
                 CouponUsage::where('order_id', $order->id)->delete();
 
                 $order->update(array_merge($request->only([
-                    'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status',
+                    'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status', 'workflow_category',
                 ]), [
                     'coupon_code' => $coupon ? $coupon->code : null,
                     'discount_amount' => $discountAmount,
