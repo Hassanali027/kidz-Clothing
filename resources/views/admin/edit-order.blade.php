@@ -45,7 +45,7 @@
                 <div class="form-group">
                     <label>Order Status</label>
                     <select name="status" class="form-control" required>
-                        @foreach(['pending' => 'Pending', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled'] as $value => $label)
+                        @foreach(['pending' => 'Pending', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered', 'hold' => 'Hold', 'cancelled' => 'Cancelled'] as $value => $label)
                             <option value="{{ $value }}" {{ old('status', strtolower($order->status)) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>

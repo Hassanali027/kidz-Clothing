@@ -895,7 +895,7 @@ class AdminController extends Controller
             'city' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
             'payment_method' => 'required|in:cod,online',
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,hold',
             'workflow_category' => 'required|in:' . implode(',', array_keys(Order::workflowCategories())),
             'coupon_code' => 'nullable|string|max:50',
             'item_sizes' => 'nullable|array',
@@ -992,7 +992,7 @@ class AdminController extends Controller
     {
         try {
             $request->validate([
-                'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled'
+                'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled,hold'
             ]);
 
             $order = Order::findOrFail($id);

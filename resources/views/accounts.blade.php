@@ -39,6 +39,7 @@
 .status-processing { background: #e3f2fd; color: #2196f3; }
 .status-shipped { background: #ede7f6; color: #673ab7; }
 .status-delivered { background: #e8f5e9; color: #4caf50; }
+.status-hold { background: #fff7d6; color: #a16207; }
 .status-cancelled { background: #ffebee; color: #f44336; }
 
 .logout-container { text-align: center; margin-top: 40px; }

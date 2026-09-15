@@ -59,6 +59,7 @@
                                         <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Processing</option>
                                         <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
                                         <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                        <option value="hold" {{ $order->status == 'hold' ? 'selected' : '' }}>Hold</option>
                                         <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     </select>
                                 </form>
@@ -163,6 +164,7 @@
         .status-processing { background: #e3f2fd; color: #2196f3; border-color: #bbdefb; }
         .status-shipped { background: #ede7f6; color: #673ab7; border-color: #d1c4e9; }
         .status-delivered { background: #e8f5e9; color: #4caf50; border-color: #c8e6c9; }
+        .status-hold { background: #fff7d6; color: #a16207; border-color: #fde68a; }
         .status-cancelled { background: #ffebee; color: #f44336; border-color: #ffcdd2; }
         .order-category-badge { display: inline-block; padding: 6px 10px; background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
         

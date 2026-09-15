@@ -138,6 +138,7 @@
                                 <option value="processing" {{ strtolower(trim($order->status)) == 'processing' ? 'selected' : '' }}>Processing</option>
                                 <option value="shipped" {{ strtolower(trim($order->status)) == 'shipped' ? 'selected' : '' }}>Shipped</option>
                                 <option value="delivered" {{ strtolower(trim($order->status)) == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                <option value="hold" {{ strtolower(trim($order->status)) == 'hold' ? 'selected' : '' }}>Hold</option>
                                 <option value="cancelled" {{ strtolower(trim($order->status)) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
                         </form>
@@ -232,6 +233,7 @@
         .status-processing { background: #e3f2fd; color: #2196f3; border-color: #bbdefb; }
         .status-shipped { background: #ede7f6; color: #673ab7; border-color: #d1c4e9; }
         .status-delivered { background: #e8f5e9; color: #4caf50; border-color: #c8e6c9; }
+        .status-hold { background: #fff7d6; color: #a16207; border-color: #fde68a; }
         .status-cancelled { background: #ffebee; color: #f44336; border-color: #ffcdd2; }
         
         .admin-table {
