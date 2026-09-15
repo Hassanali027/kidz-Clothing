@@ -115,6 +115,18 @@ class CheckoutController extends Controller
             $order = DB::transaction(function () use ($request, $cart, $total, $couponCode) {
                 $coupon = null;
                 $discountPercent = ($request->payment_method ?? 'cod') === 'online' ? 5 : 0;
+                $duplicateOrderQuery = Order::where('created_at', '>=', now()->subHours(24));
+
+                $duplicateOrderQuery->where(function ($query) use ($request) {
+                    if (auth()->check()) {
+                        $query->where('user_id', auth()->id())
+                            ->orWhere('phone', $request->phone);
+                    } else {
+                        $query->where('phone', $request->phone);
+                    }
+                });
+
+                $isDuplicate = $duplicateOrderQuery->lockForUpdate()->exists();
 
                 if ($couponCode !== '') {
                     $coupon = Coupon::where('code', $couponCode)->lockForUpdate()->first();
@@ -148,6 +160,7 @@ class CheckoutController extends Controller
                     'total_amount' => $finalTotal,
                     'payment_method' => $request->payment_method ?? 'cod',
                     'status' => 'pending',
+                    'workflow_category' => $isDuplicate ? 'duplicate' : 'new_order',
                     'is_new' => true,
                 ]);
 
