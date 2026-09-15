@@ -41,6 +41,7 @@
             <table class="admin-table">
                 <thead>
                     <tr>
+                        <th style="width: 44px;"><input type="checkbox" id="select-all-orders" aria-label="Select all orders"></th>
                         <th>Order #</th>
                         <th>Customer</th>
                         <th>City</th>
@@ -54,6 +55,7 @@
                 <tbody>
                     @forelse($orders as $order)
                         <tr class="{{ $order->is_new ? 'new-order-row' : '' }}">
+                            <td><input type="checkbox" class="order-selector" value="{{ $order->id }}" aria-label="Select order {{ $order->order_number }}"></td>
                             <td>
                                 <strong>{{ $order->order_number }}</strong>
                                 @if($order->is_new)<span class="new-order-flag">NEW</span>@endif
@@ -95,7 +97,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px; color: #999;">No orders found for this category.</td>
+                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">No orders found for this category.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -155,6 +157,22 @@
             document.getElementById('undo-notification').style.display = 'none';
             currentForm = null;
         });
+
+        (function () {
+            var selectAll = document.getElementById('select-all-orders');
+            var selectors = Array.prototype.slice.call(document.querySelectorAll('.order-selector'));
+            if (!selectAll) return;
+
+            selectAll.addEventListener('change', function () {
+                selectors.forEach(function (checkbox) { checkbox.checked = selectAll.checked; });
+            });
+
+            selectors.forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    selectAll.checked = selectors.length > 0 && selectors.every(function (item) { return item.checked; });
+                });
+            });
+        })();
     </script>
 
     <style>
@@ -184,6 +202,7 @@
         .new-order-row { background: #fffbeb; }
         .new-order-row td:first-child { border-left: 4px solid #f59e0b; }
         .new-order-flag { display: inline-block; margin: 7px 0 0; padding: 3px 7px; background: #f59e0b; color: #fff; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+        #select-all-orders, .order-selector { width: 17px; height: 17px; accent-color: #f06292; cursor: pointer; vertical-align: middle; }
         
         .admin-table {
             width: 100%;
