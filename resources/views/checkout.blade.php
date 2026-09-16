@@ -82,6 +82,15 @@
     font-size: 15px;
     color: #000;
 }
+.jazzcash-qr-btn { margin-top:10px; border:0; border-radius:5px; background:#e63946; color:#fff; padding:9px 13px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+.jazzcash-qr-btn:hover { background:#c92736; }
+.payment-qr-modal { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.55); }
+.payment-qr-modal.is-open { display:flex; }
+.payment-qr-dialog { position:relative; width:min(420px,100%); background:#fff; border-radius:12px; padding:24px; text-align:center; box-shadow:0 16px 45px rgba(0,0,0,.28); }
+.payment-qr-dialog h3 { margin:0 34px 8px 0; font-size:19px; }
+.payment-qr-dialog p { margin:0 0 16px; color:#555; font-size:13px; line-height:1.5; }
+.payment-qr-dialog img { display:block; width:min(300px,100%); max-height:420px; object-fit:contain; margin:0 auto; border:1px solid #eee; border-radius:8px; }
+.payment-qr-close { position:absolute; top:12px; right:12px; border:0; background:#f1f1f1; color:#333; width:32px; height:32px; border-radius:50%; font-size:20px; cursor:pointer; }
 
 /* Sidebar Order Summary */
 .checkout-order-summary {
@@ -282,6 +291,7 @@
                             <strong>Bank Transfer:</strong> Soneri Bank, Account No: 20008214787<br>
                             Please send a screenshot of payment on WhatsApp: <strong>03034280347</strong>
                         </p>
+                        <button type="button" class="jazzcash-qr-btn" id="open-jazzcash-qr">View JazzCash QR</button>
                     </div>
                 </div>
 
@@ -344,6 +354,15 @@
     </form>
 </div>
 
+<div class="payment-qr-modal" id="jazzcash-qr-modal" role="dialog" aria-modal="true" aria-labelledby="jazzcash-qr-title" aria-hidden="true">
+    <div class="payment-qr-dialog">
+        <button type="button" class="payment-qr-close" id="close-jazzcash-qr" aria-label="Close QR popup">×</button>
+        <h3 id="jazzcash-qr-title">JazzCash QR Payment</h3>
+        <p>Scan this QR code in JazzCash to make your payment, then send the payment screenshot on WhatsApp.</p>
+        <img src="{{ asset('images/img-home/jazzcash-qr.jpeg') }}" alt="JazzCash payment QR code">
+    </div>
+</div>
+
 <script>
     const totalAmount = {{ $total }};
     const couponDiscountPercent = {{ $coupon ? $coupon->discount_percent : 0 }};
@@ -394,6 +413,30 @@
     }
 
     updateTotal();
+
+    (function () {
+        var modal = document.getElementById('jazzcash-qr-modal');
+        var openButton = document.getElementById('open-jazzcash-qr');
+        var closeButton = document.getElementById('close-jazzcash-qr');
+        if (!modal || !openButton || !closeButton) return;
+
+        function closeQrModal() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        openButton.addEventListener('click', function () {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+        });
+        closeButton.addEventListener('click', closeQrModal);
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeQrModal();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') closeQrModal();
+        });
+    }());
 </script>
 
 @include('partials.footer')
