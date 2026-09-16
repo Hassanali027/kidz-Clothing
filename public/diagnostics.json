@@ -1,15 +1,15 @@
 {
-    "timestamp": "2026-06-23 23:26:41",
-    "requested_slug": "boys-wear",
+    "timestamp": "2026-09-16 13:01:21",
+    "requested_slug": "baby-wear",
     "size_filter": null,
     "price_range": {
         "min": 0,
         "max": 10000
     },
     "resolved_category": {
-        "id": 1,
-        "name": "boys",
-        "slug": "boys-wear",
+        "id": 3,
+        "name": "baby-wear",
+        "slug": "baby-wear",
         "status": "active"
     },
     "unique_product_categories": [
@@ -21,83 +21,61 @@
     ],
     "all_products_count": 22,
     "active_products_count": 22,
-    "matched_products_count": 7,
+    "matched_products_count": 5,
     "matched_products": [
         {
-            "id": 22,
-            "name": "The Boys",
+            "id": 13,
+            "name": "baby products",
             "price": "2000.00",
-            "sale_price": "1199.99",
+            "sale_price": "1499.99",
             "status": "active",
-            "stock": 0,
-            "category": "boys",
-            "age_group": "5-8",
-            "product_type": "T-Shirts"
-        },
-        {
-            "id": 21,
-            "name": "Boys",
-            "price": "4000.00",
-            "sale_price": "1999.91",
-            "status": "active",
-            "stock": 0,
-            "category": "boys",
-            "age_group": "2-5",
-            "product_type": null
-        },
-        {
-            "id": 20,
-            "name": "boys wear",
-            "price": "1000.00",
-            "sale_price": "999.99",
-            "status": "active",
-            "stock": 100,
-            "category": "boys",
-            "age_group": "5-8",
-            "product_type": null
-        },
-        {
-            "id": 17,
-            "name": "the boys",
-            "price": "2000.00",
-            "sale_price": "1999.99",
-            "status": "active",
-            "stock": 0,
-            "category": "boys",
+            "stock": 1000,
+            "category": "baby-wear",
             "age_group": "0-2",
             "product_type": null
         },
         {
-            "id": 7,
-            "name": "Casual cloth",
-            "price": "2000.00",
+            "id": 12,
+            "name": "small baby",
+            "price": "3000.00",
+            "sale_price": "1999.98",
+            "status": "active",
+            "stock": 100,
+            "category": "baby-wear",
+            "age_group": "0-2",
+            "product_type": null
+        },
+        {
+            "id": 11,
+            "name": "baby-cloth",
+            "price": "1000.00",
+            "sale_price": null,
+            "status": "active",
+            "stock": 0,
+            "category": "baby-wear",
+            "age_group": "0-2",
+            "product_type": null
+        },
+        {
+            "id": 10,
+            "name": "baby-cloth",
+            "price": "1000.00",
             "sale_price": "999.98",
             "status": "active",
             "stock": 0,
-            "category": "boys",
-            "age_group": "8-14",
+            "category": "baby-wear",
+            "age_group": "0-2",
             "product_type": null
         },
         {
-            "id": 6,
-            "name": "trouser -shirt",
-            "price": "3000.00",
-            "sale_price": "2500.00",
+            "id": 8,
+            "name": "baby-cloth",
+            "price": "1500.00",
+            "sale_price": "999.99",
             "status": "active",
             "stock": 0,
-            "category": "boys",
-            "age_group": "5-8",
-            "product_type": null
-        },
-        {
-            "id": 2,
-            "name": "tshirts",
-            "price": "1300.00",
-            "sale_price": "1300.00",
-            "status": "active",
-            "stock": 0,
-            "category": "boys",
-            "age_group": "2-5",
+            "category": "baby-wear",
+            "age_group": "0-2",
             "product_type": null
         }
     ]
