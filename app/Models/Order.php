@@ -37,6 +37,9 @@ class Order extends Model
         'total_amount',
         'payment_method',
         'status',
+        'postex_tracking_number',
+        'postex_status',
+        'postex_created_at',
         'workflow_category',
         'is_new',
     ];
@@ -44,6 +47,22 @@ class Order extends Model
     public static function workflowCategories(): array
     {
         return self::WORKFLOW_CATEGORIES;
+    }
+
+    /**
+     * A stable key for spotting repeat orders from the same contact and delivery address.
+     */
+    public static function duplicateContactKey($phone, $address, $city = null)
+    {
+        $normalPhone = preg_replace('/\D+/', '', (string) $phone);
+        $normalAddress = strtolower(trim(preg_replace('/\s+/', ' ', (string) $address)));
+        $normalCity = strtolower(trim(preg_replace('/\s+/', ' ', (string) $city)));
+
+        if ($normalPhone === '' || $normalAddress === '') {
+            return null;
+        }
+
+        return $normalPhone . '|' . $normalAddress . '|' . $normalCity;
     }
 
     public function items()

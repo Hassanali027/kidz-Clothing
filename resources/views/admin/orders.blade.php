@@ -66,7 +66,12 @@
                             <td>{{ $order->first_name }} {{ $order->last_name }}<br><small>{{ $order->phone }}</small></td>
                             <td>{{ $order->city }}</td>
                             <td>Rs {{ number_format($order->total_amount) }}</td>
-                            <td><span class="order-category-badge">{{ $categories[$order->workflow_category] ?? 'New Order' }}</span></td>
+                            <td>
+                                <span class="order-category-badge">{{ $categories[$order->workflow_category] ?? 'New Order' }}</span>
+                                @if($order->is_contact_address_duplicate)
+                                    <span class="order-duplicate-contact">Duplicate contact</span>
+                                @endif
+                            </td>
                             <td>
                                 <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">
                                     @csrf
@@ -89,6 +94,16 @@
                                     <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn-action" style="background: #f59e0b; color: #fff;" title="Edit Order">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
+                                    @if($order->postex_tracking_number)
+                                        <span class="postex-tracking" title="PostEx tracking number">{{ $order->postex_tracking_number }}</span>
+                                    @elseif(!in_array($order->status, ['cancelled', 'delivered']))
+                                        <form action="{{ route('admin.orders.postexShipment', $order->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Create a PostEx shipment for order {{ $order->order_number }}?');">
+                                            @csrf
+                                            <button type="submit" class="btn-action postex-action" title="Create PostEx shipment">
+                                                <i class="fa-solid fa-truck"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                     <form action="{{ route('admin.orders.delete', $order->id) }}" method="POST" onsubmit="confirmDelete(event, this)" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn-action btn-delete" title="Delete">
@@ -215,6 +230,9 @@
         .status-hold { background: #fff7d6; color: #a16207; border-color: #fde68a; }
         .status-cancelled { background: #ffebee; color: #f44336; border-color: #ffcdd2; }
         .order-category-badge { display: inline-block; padding: 6px 10px; background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .order-duplicate-contact { display: inline-block; margin-top: 6px; padding: 3px 7px; color: #a16207; background: #fff7d6; border: 1px solid #fde68a; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+        .postex-action { background: #2563eb; color: #fff; }
+        .postex-tracking { display: inline-block; max-width: 105px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; padding: 7px 8px; border-radius: 5px; color: #1d4ed8; background: #eff6ff; font-size: 10px; font-weight: 700; white-space: nowrap; }
         .new-orders-notice { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 12px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; color: #047857; }
         .new-orders-notice i { color: #f59e0b; }
         .new-orders-notice span { color: #4b5563; font-size: 13px; }

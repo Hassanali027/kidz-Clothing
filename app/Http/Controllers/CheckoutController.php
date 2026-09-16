@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -115,18 +117,12 @@ class CheckoutController extends Controller
             $order = DB::transaction(function () use ($request, $cart, $total, $couponCode) {
                 $coupon = null;
                 $discountPercent = ($request->payment_method ?? 'cod') === 'online' ? 5 : 0;
-                $duplicateOrderQuery = Order::where('created_at', '>=', now()->subHours(24));
-
-                $duplicateOrderQuery->where(function ($query) use ($request) {
-                    if (auth()->check()) {
-                        $query->where('user_id', auth()->id())
-                            ->orWhere('phone', $request->phone);
-                    } else {
-                        $query->where('phone', $request->phone);
-                    }
-                });
-
-                $isDuplicate = $duplicateOrderQuery->lockForUpdate()->exists();
+                $contactKey = Order::duplicateContactKey($request->phone, $request->address, $request->city);
+                $isDuplicate = $contactKey !== null && Order::select('phone', 'address', 'city')
+                    ->get()
+                    ->contains(function ($existingOrder) use ($contactKey) {
+                        return Order::duplicateContactKey($existingOrder->phone, $existingOrder->address, $existingOrder->city) === $contactKey;
+                    });
 
                 if ($couponCode !== '') {
                     $coupon = Coupon::where('code', $couponCode)->lockForUpdate()->first();
@@ -164,12 +160,53 @@ class CheckoutController extends Controller
                     'is_new' => true,
                 ]);
 
-                foreach ($cart as $productId => $item) {
-                    \App\Models\OrderItem::create([
+                foreach ($cart as $cartKey => $item) {
+                    $productId = $this->productIdFromCartItem($cartKey, $item);
+                    $quantity = max(1, (int) ($item['quantity'] ?? 1));
+                    $size = trim((string) ($item['size'] ?? ''));
+
+                    if (!$productId) {
+                        throw new \RuntimeException('One of the products in your cart is no longer available.');
+                    }
+
+                    $product = Product::whereKey($productId)->lockForUpdate()->first();
+                    if (!$product || $product->status !== 'active' || $product->is_out_of_stock) {
+                        throw new \RuntimeException('One of the products in your cart is out of stock.');
+                    }
+
+                    $sizeStock = $product->size_stock ?? [];
+                    if (!empty($sizeStock) && ($size === '' || !array_key_exists($size, $sizeStock))) {
+                        throw new \RuntimeException('The selected size for ' . $product->name . ' is no longer available.');
+                    }
+
+                    if ($size !== '' && array_key_exists($size, $sizeStock) && (int) $sizeStock[$size] < $quantity) {
+                        throw new \RuntimeException('Only ' . $sizeStock[$size] . ' item(s) are available for size ' . $size . '.');
+                    }
+
+                    if ((int) $product->stock_quantity < $quantity) {
+                        throw new \RuntimeException('Only ' . $product->stock_quantity . ' item(s) are available for ' . $product->name . '.');
+                    }
+
+                    $hasManagedSizeStock = !empty($sizeStock);
+                    if ($size !== '' && array_key_exists($size, $sizeStock)) {
+                        $sizeStock[$size] = (int) $sizeStock[$size] - $quantity;
+                        $product->size_stock = $sizeStock;
+                    }
+
+                    // When the product has age/size-wise stock, its main stock is
+                    // the sum of those quantities. This keeps product cards and the
+                    // detail page in sync after every completed order.
+                    $product->stock_quantity = $hasManagedSizeStock
+                        ? collect($sizeStock)->sum(function ($available) { return (int) $available; })
+                        : (int) $product->stock_quantity - $quantity;
+
+                    $product->save();
+
+                    OrderItem::create([
                         'order_id' => $order->id,
-                        'product_id' => is_numeric($productId) ? $productId : null,
+                        'product_id' => $product->id,
                         'product_name' => $item['name'],
-                        'quantity' => $item['quantity'],
+                        'quantity' => $quantity,
                         'price' => $item['price'],
                         'product_image' => $item['image'] ?? null,
                         'color' => $item['color'] ?? null,
@@ -217,5 +254,22 @@ class CheckoutController extends Controller
         }
 
         return [$coupon, null];
+    }
+
+    /**
+     * Cart entries created before product_id was added use a key like
+     * "product_42_1-2Y". Keep those existing carts checkout-safe as well.
+     */
+    private function productIdFromCartItem($cartKey, array $item)
+    {
+        if (!empty($item['product_id']) && is_numeric($item['product_id'])) {
+            return (int) $item['product_id'];
+        }
+
+        if (preg_match('/^product_(\d+)(?:_|$)/', (string) $cartKey, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
     }
 }

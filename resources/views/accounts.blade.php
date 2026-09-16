@@ -211,6 +211,9 @@
                             </td>
                             <td style="padding: 16px 20px; text-align: right;">
                                 <a href="{{ route('accounts.orders.view', $order->id) }}" style="color: #111; font-weight: 600; text-decoration: none; font-size: 14px;">View Details</a>
+                                @if($order->postex_tracking_number)
+                                    <a href="https://merchant.postex.pk/track-order?cn={{ rawurlencode($order->postex_tracking_number) }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-left: 12px; color: #2563eb; font-weight: 700; text-decoration: none; font-size: 13px;">Track Parcel</a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

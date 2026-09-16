@@ -33,6 +33,12 @@
 
 .btn-cancel { display: block; width: 100%; text-align: center; margin-top: 20px; background: #fff; border: 1px solid #f44336; color: #f44336; padding: 12px; border-radius: 4px; font-size: 14px; cursor: pointer; text-decoration: none; }
 .btn-cancel:hover { background: #fef0f0; }
+.tracking-card { margin: 0 25px 25px; padding: 16px 18px; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tracking-card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #1d4ed8; }
+.tracking-number { margin-top: 4px; font-size: 16px; font-weight: 800; color: #172554; }
+.track-postex-btn { display: inline-block; padding: 10px 16px; border-radius: 5px; background: #2563eb; color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.track-postex-btn:hover { background: #1d4ed8; }
+@media (max-width: 640px) { .tracking-card { margin: 0 15px 18px; align-items: flex-start; flex-direction: column; } }
 
 /* Custom Modal Styles */
 .modal-overlay {
@@ -106,6 +112,16 @@
                 @endforeach
             </tbody>
         </table>
+
+        @if($order->postex_tracking_number)
+            <div class="tracking-card">
+                <div>
+                    <div class="tracking-card-label">PostEx tracking number</div>
+                    <div class="tracking-number">{{ $order->postex_tracking_number }}</div>
+                </div>
+                <a class="track-postex-btn" href="https://merchant.postex.pk/track-order?cn={{ rawurlencode($order->postex_tracking_number) }}" target="_blank" rel="noopener noreferrer">Track with PostEx <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </div>
+        @endif
 
         <div class="bottom-section">
             <div class="address-block">

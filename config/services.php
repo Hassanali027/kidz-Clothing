@@ -30,4 +30,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'postex' => [
+        'token' => env('POSTEX_API_TOKEN'),
+        'base_url' => env('POSTEX_API_BASE_URL', 'https://api.postex.pk/services/integration/api/order'),
+        'pickup_address_code' => env('POSTEX_PICKUP_ADDRESS_CODE'),
+        'store_address_code' => env('POSTEX_STORE_ADDRESS_CODE'),
+        'origin_city' => env('POSTEX_ORIGIN_CITY'),
+    ],
+
 ];

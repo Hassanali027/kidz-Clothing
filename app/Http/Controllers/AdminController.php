@@ -12,6 +12,7 @@ use App\Models\Coupon;
 use App\Models\CouponUsage;
 use App\Models\Testimonial;
 use App\Models\ProductReview;
+use App\Services\PostExService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -428,6 +429,9 @@ class AdminController extends Controller
             }
 
             $sizeStock = $this->parseSizeStock($request->size_stock_input);
+            $stockQuantity = !empty($sizeStock)
+                ? collect($sizeStock)->sum(function ($quantity) { return (int) $quantity; })
+                : (int) $request->stock_quantity;
             $product = Product::create([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -437,7 +441,7 @@ class AdminController extends Controller
                 'sale_price' => $request->sale_price,
                 'description' => $request->description,
                 'images' => $images,
-                'stock_quantity' => $request->stock_quantity,
+                'stock_quantity' => $stockQuantity,
                 'status' => $request->status,
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
@@ -556,6 +560,9 @@ class AdminController extends Controller
             }
 
             $sizeStock = $this->parseSizeStock($request->size_stock_input);
+            $stockQuantity = !empty($sizeStock)
+                ? collect($sizeStock)->sum(function ($quantity) { return (int) $quantity; })
+                : (int) $request->stock_quantity;
             $product->update([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -565,7 +572,7 @@ class AdminController extends Controller
                 'sale_price' => $request->sale_price,
                 'description' => $request->description,
                 'images' => $images,
-                'stock_quantity' => $request->stock_quantity,
+                'stock_quantity' => $stockQuantity,
                 'status' => $request->status,
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
@@ -868,6 +875,20 @@ class AdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $duplicateContactCounts = Order::select('phone', 'address', 'city')
+            ->get()
+            ->map(function ($order) {
+                return Order::duplicateContactKey($order->phone, $order->address, $order->city);
+            })
+            ->filter()
+            ->countBy();
+
+        $orders->each(function ($order) use ($duplicateContactCounts) {
+            $contactKey = Order::duplicateContactKey($order->phone, $order->address, $order->city);
+            $order->is_contact_address_duplicate = $contactKey !== null
+                && ($duplicateContactCounts[$contactKey] ?? 0) > 1;
+        });
+
         return view('admin.orders', [
             'pageTitle' => 'Order Management',
             'orders' => $orders,
@@ -1035,6 +1056,36 @@ class AdminController extends Controller
             return redirect()->back()->with('success', 'Order status updated successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    public function createPostExShipment($id, PostExService $postEx)
+    {
+        $order = Order::with('items')->findOrFail($id);
+
+        if (in_array($order->status, ['cancelled', 'delivered'], true)) {
+            return redirect()->back()->with('error', 'PostEx shipment cannot be created for a cancelled or delivered order.');
+        }
+
+        try {
+            $shipment = $postEx->createShipment($order);
+            $order->update([
+                'postex_tracking_number' => $shipment['tracking_number'],
+                'postex_status' => $shipment['status'],
+                'postex_created_at' => now(),
+                'status' => 'shipped',
+                'workflow_category' => 'dispatched',
+                'is_new' => false,
+            ]);
+
+            return redirect()->back()->with('success', 'PostEx shipment created. Tracking number: ' . $shipment['tracking_number']);
+        } catch (\Throwable $exception) {
+            \Log::warning('PostEx shipment creation failed.', [
+                'order_id' => $order->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 

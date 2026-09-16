@@ -178,6 +178,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::post('/orders/{id}/update', [AdminController::class, 'updateOrder'])->name('orders.update');
     Route::post('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('orders.delete');
     Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
+    Route::post('/orders/{id}/postex-shipment', [AdminController::class, 'createPostExShipment'])->name('orders.postexShipment');
 
     // Users Management Route
     Route::get('/users', [AdminController::class, 'users'])->name('users');
