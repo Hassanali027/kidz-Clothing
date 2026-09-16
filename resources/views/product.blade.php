@@ -16,6 +16,7 @@
 .pd-thumb--active,.pd-thumb:hover { border-color:#29b6f6; }
 .pd-main-img-wrap { position:relative; flex:1; border-radius:10px; overflow:hidden; border:1px solid #eee; line-height:0; cursor:zoom-in; }
 .pd-main-img { width:100%; height:auto; object-fit:cover; object-position:top center; display:block; transition:transform 0.4s ease; }
+.pd-discount-badge { position:absolute; top:12px; left:12px; z-index:2; background:#f06292; color:#fff; padding:8px 11px; border-radius:6px; font-size:13px; font-weight:800; line-height:1; box-shadow:0 2px 6px rgba(0,0,0,0.18); pointer-events:none; }
 .pd-main-img-wrap:hover .pd-main-img { transform:scale(1.04); }
 @media (hover:hover) and (min-width:601px) {
     .pd-main-img-wrap:hover .pd-main-img { transform:scale(1.65); }
@@ -299,6 +300,10 @@
 
                 <!-- Main image -->
                 <div class="pd-main-img-wrap">
+                    @if($product->sale_price && $product->sale_price < $product->price)
+                        @php($discountPercent = (int) round((($product->price - $product->sale_price) / $product->price) * 100))
+                        <span class="pd-discount-badge">{{ $discountPercent }}% OFF</span>
+                    @endif
                     <img src="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}" alt="{{ $product->name }}" class="pd-main-img" id="pd-main-img">
                     <button class="pd-zoom-btn" id="pd-zoom-btn" aria-label="Zoom">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
