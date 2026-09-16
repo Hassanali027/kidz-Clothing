@@ -350,15 +350,12 @@
                 <div class="pd-divider"></div>
 
                 <!-- Color + Size Row -->
+                @php($colors = array_values(array_filter(array_map('trim', explode(',', (string) $product->color)))))
                 <div class="pd-color-size-row">
 
                     <!-- Color -->
-                    @if($product->color)
+                    @if(count($colors))
                     <div class="pd-option-group" id="pd-color-group">
-                        @php
-                            $colors = explode(',', $product->color);
-                            $colors = array_map('trim', $colors);
-                        @endphp
                         <p class="pd-option-label">Color: <strong id="pd-color-val">{{ $colors[0] }}</strong></p>
                         <div class="pd-colors">
                             @foreach($colors as $index => $color)
@@ -396,7 +393,7 @@
                     <input type="hidden" name="name" value="{{ $product->name }}">
                     <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->price }}">
                     <input type="hidden" name="image" value="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}">
-                    <input type="hidden" name="color" id="selected_color" value="{{ isset($colors) ? $colors[0] : '' }}">
+                    <input type="hidden" name="color" id="selected_color" value="{{ $colors[0] ?? '' }}">
                     <input type="hidden" name="size" id="selected_size" value="{{ $firstAvailableSize }}">
                     
                     <input type="hidden" name="buy_now" id="buy_now_input" value="0">
