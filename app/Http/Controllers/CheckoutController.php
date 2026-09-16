@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class CheckoutController extends Controller
 {
     private const FREE_DELIVERY_THRESHOLD = 3000;
-    private const SHIPPING_CHARGE = 250;
+    private const SHIPPING_CHARGE = 199;
 
     public function index()
     {

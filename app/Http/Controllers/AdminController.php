@@ -969,7 +969,7 @@ class AdminController extends Controller
                     $discountPercent += $coupon->discount_percent;
                 }
                 $discountAmount = round($subtotal * ($discountPercent / 100), 2);
-                $shippingCharge = $subtotal < 3000 ? 250 : 0;
+                $shippingCharge = $subtotal < 3000 ? 199 : 0;
 
                 // Remove any previous one-time coupon usage recorded for this order.
                 CouponUsage::where('order_id', $order->id)->delete();
