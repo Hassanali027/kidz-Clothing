@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -19,20 +20,46 @@ class CartController extends Controller
 
     public function add(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $product = Product::find($request->input('product_id'));
+        if (!$product) {
+            return back()->with('error', 'This product is no longer available.');
+        }
 
-        $id = $request->id ?? 'prod_'.time();
+        $size = trim((string) $request->input('size'));
+        $quantity = max(1, (int) $request->input('quantity', 1));
+        if ($product->is_out_of_stock || $product->isSizeOutOfStock($size)) {
+            return back()->with('error', 'This product or selected size is out of stock.');
+        }
+
+        $sizeStock = $product->size_stock ?? [];
+        if (array_key_exists($size, $sizeStock) && $quantity > (int) $sizeStock[$size]) {
+            return back()->with('error', 'Only ' . $sizeStock[$size] . ' item(s) are available for size ' . $size . '.');
+        }
+
+        if ($quantity > (int) $product->stock_quantity) {
+            return back()->with('error', 'Only ' . $product->stock_quantity . ' item(s) are available.');
+        }
+
+        $cart = session()->get('cart', []);
+        $id = 'product_' . $product->id . '_' . ($size !== '' ? $size : 'standard');
         
         if(isset($cart[$id])) {
-            $cart[$id]['quantity'] += $request->quantity ?? 1;
+            $newQuantity = $cart[$id]['quantity'] + $quantity;
+            if (array_key_exists($size, $sizeStock) && $newQuantity > (int) $sizeStock[$size]) {
+                return back()->with('error', 'Only ' . $sizeStock[$size] . ' item(s) are available for size ' . $size . '.');
+            }
+            if ($newQuantity > (int) $product->stock_quantity) {
+                return back()->with('error', 'Only ' . $product->stock_quantity . ' item(s) are available.');
+            }
+            $cart[$id]['quantity'] = $newQuantity;
         } else {
             $cart[$id] = [
-                "name" => $request->name,
-                "quantity" => $request->quantity ?? 1,
-                "price" => $request->price,
-                "image" => $request->image,
+                "name" => $product->name,
+                "quantity" => $quantity,
+                "price" => $product->sale_price ?? $product->price,
+                "image" => asset($product->images[0] ?? 'images/img-home/baby-wear.jpg'),
                 "color" => $request->color ?? null,
-                "size" => $request->size ?? null,
+                "size" => $size ?: null,
             ];
         }
 

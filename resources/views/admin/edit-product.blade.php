@@ -57,9 +57,9 @@
                     <label>Age Group</label>
                     <input type="text" name="age_group" class="form-control" value="{{ old('age_group', $product->age_group) }}" placeholder="e.g. 2-5, 5-8, 8-10" required>
                     <small style="color: #666;">For multiple age groups, separate each option with a comma.</small>
-                    <div class="age-stock-editor" data-stock="{{ e(json_encode($product->size_stock ?? [])) }}" style="margin-top:14px;"></div>
+                    <div class="age-stock-editor" data-stock="{{ e(json_encode($product->size_stock ?? [])) }}" data-fallback-stock="{{ old('stock_quantity', $product->stock_quantity) }}" style="margin-top:14px;"></div>
                     <input type="hidden" name="size_stock_input" class="age-stock-input">
-                    <small style="color: #666;">Enter age groups above, then set each quantity below. Use 0 when unavailable.</small>
+                    <small style="color: #666;">Saved age-wise quantities will appear below. For older products, the current stock is used as the starting quantity. Use 0 only when unavailable.</small>
                 </div>
             </div>
 
@@ -116,11 +116,17 @@
             @if($product->images && count($product->images) > 0)
             <div class="form-group">
                 <label>Current Images</label>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;">
+                <small style="display:block;color:#666;margin:4px 0 12px;">Use ↑ / ↓ to choose which image appears first on the product page.</small>
+                <div id="currentImagesList" style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;">
                     @foreach($product->images as $image)
-                        <div class="image-preview-container" style="position: relative; display: inline-block;">
+                        <div class="image-preview-container" data-image="{{ $image }}" style="position: relative; display: inline-block; padding-bottom: 28px;">
                             <img src="{{ asset($image) }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0;">
                             <button type="button" class="remove-img-btn" data-image="{{ $image }}" style="position: absolute; top: -6px; right: -6px; background: #e53e3e; color: white; border: none; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); font-weight: bold; transition: background 0.2s;">✕</button>
+                            <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                <button type="button" class="move-image-btn" data-direction="up" aria-label="Move image earlier" style="border:1px solid #cbd5e1;background:#fff;border-radius:4px;width:27px;height:24px;cursor:pointer;font-weight:700;">↑</button>
+                                <span class="image-position" style="font-size:12px;color:#64748b;min-width:14px;text-align:center;"></span>
+                                <button type="button" class="move-image-btn" data-direction="down" aria-label="Move image later" style="border:1px solid #cbd5e1;background:#fff;border-radius:4px;width:27px;height:24px;cursor:pointer;font-weight:700;">↓</button>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -130,7 +136,8 @@
 
             <div class="form-group">
                 <label>Add More Images</label>
-                <input type="file" name="product_images[]" class="form-control" multiple accept="image/*">
+                <input type="file" name="product_images[]" class="form-control" multiple accept="image/*" id="newProductImages">
+                <div id="newProductImagesPreview" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;"></div>
                 <small style="color: #666; font-size: 13px;">Upload new images (will be added to existing images) - JPG, PNG, GIF, WEBP - Max 5MB each</small>
             </div>
 
@@ -325,6 +332,28 @@
             </style>
 
             <script>
+                (function () {
+                    var fileInput = document.getElementById('newProductImages');
+                    var preview = document.getElementById('newProductImagesPreview');
+                    if (!fileInput || !preview) return;
+                    fileInput.addEventListener('change', function () {
+                        preview.innerHTML = '';
+                        Array.from(fileInput.files).forEach(function (file) {
+                            if (!file.type || file.type.indexOf('image/') !== 0) return;
+                            var reader = new FileReader();
+                            reader.onload = function (event) {
+                                var card = document.createElement('div');
+                                card.style.cssText = 'width:100px;text-align:center;color:#64748b;font-size:12px;overflow:hidden;';
+                                card.innerHTML = '<img src="' + event.target.result + '" alt="Selected image preview" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:2px solid #bfdbfe;display:block;margin-bottom:4px;"><span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + file.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '">' + file.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                                preview.appendChild(card);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    });
+                }());
+            </script>
+
+            <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const productTypeSelect = document.querySelector('.js-product-type-select');
                 const customProductType = document.querySelector('.js-product-type-custom');
@@ -496,9 +525,54 @@
                         container.style.transform = 'scale(0.8)';
                         setTimeout(function() {
                             container.remove();
+                            if (window.refreshImageOrder) window.refreshImageOrder();
                         }, 250);
                     });
                 });
+
+                var imageList = document.getElementById('currentImagesList');
+                if (imageList) {
+                    window.refreshImageOrder = function () {
+                        var cards = Array.from(imageList.querySelectorAll('.image-preview-container'));
+                        cards.forEach(function (card, index) {
+                            var position = card.querySelector('.image-position');
+                            if (position) position.textContent = index + 1;
+                            card.querySelectorAll('.move-image-btn').forEach(function (button) {
+                                var direction = button.getAttribute('data-direction');
+                                button.disabled = (direction === 'up' && index === 0) || (direction === 'down' && index === cards.length - 1);
+                                button.style.opacity = button.disabled ? '0.45' : '1';
+                                button.style.cursor = button.disabled ? 'not-allowed' : 'pointer';
+                            });
+                        });
+                    };
+
+                    imageList.addEventListener('click', function (event) {
+                        var button = event.target.closest('.move-image-btn');
+                        if (!button || button.disabled) return;
+                        var card = button.closest('.image-preview-container');
+                        var cards = Array.from(imageList.querySelectorAll('.image-preview-container'));
+                        var index = cards.indexOf(card);
+                        if (button.getAttribute('data-direction') === 'up' && index > 0) {
+                            imageList.insertBefore(card, cards[index - 1]);
+                        } else if (button.getAttribute('data-direction') === 'down' && index < cards.length - 1) {
+                            imageList.insertBefore(cards[index + 1], card);
+                        }
+                        window.refreshImageOrder();
+                    });
+
+                    var imageForm = imageList.closest('form');
+                    if (imageForm) imageForm.addEventListener('submit', function () {
+                        imageForm.querySelectorAll('input[name="image_order[]"]').forEach(function (input) { input.remove(); });
+                        imageList.querySelectorAll('.image-preview-container').forEach(function (card) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'image_order[]';
+                            input.value = card.getAttribute('data-image');
+                            imageForm.appendChild(input);
+                        });
+                    });
+                    window.refreshImageOrder();
+                }
             });
             </script>
 
@@ -508,6 +582,8 @@
                     var editor = document.querySelector('.age-stock-editor');
                     var hiddenInput = document.querySelector('.age-stock-input');
                     var stored = {};
+                    var fallbackStock = Number(editor.dataset.fallbackStock || 0);
+                    if (!Number.isFinite(fallbackStock) || fallbackStock < 0) fallbackStock = 0;
                     try {
                         stored = JSON.parse(editor.dataset.stock || '{}');
                     } catch (error) {
@@ -520,9 +596,12 @@
                         editor.querySelectorAll('input[data-age]').forEach(function (input) { values[input.dataset.age] = input.value; });
                         editor.innerHTML = ages.length ? '<label style="display:block; margin-bottom:8px; font-weight:700;">Quantity for each age group</label>' : '';
                         ages.forEach(function (age) {
+                            var hasCurrentValue = Object.prototype.hasOwnProperty.call(values, age);
+                            var hasSavedValue = Object.prototype.hasOwnProperty.call(stored, age);
+                            var quantity = hasCurrentValue ? values[age] : (hasSavedValue ? stored[age] : fallbackStock);
                             var row = document.createElement('div');
                             row.style.cssText = 'display:flex; align-items:center; gap:10px; margin-bottom:8px; max-width:300px;';
-                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + (values[age] || stored[age] || 0) + '">';
+                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + quantity + '">';
                             editor.appendChild(row);
                         });
                     }

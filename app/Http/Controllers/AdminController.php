@@ -487,7 +487,9 @@ class AdminController extends Controller
                 'color' => 'nullable|string|max:255',
                 'size' => 'nullable|string|max:255',
                 'review_count' => 'nullable|integer|min:0',
-                'size_stock_input' => 'nullable|string|max:1000'
+                'size_stock_input' => 'nullable|string|max:1000',
+                'image_order' => 'nullable|array',
+                'image_order.*' => 'string|max:1000'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -520,6 +522,12 @@ class AdminController extends Controller
                     $images[] = 'images/products/' . $imageName;
                 }
             }
+
+            // Keep the administrator's chosen order for existing images, then append newly uploaded images.
+            $requestedOrder = array_values(array_filter((array) $request->input('image_order', []), function ($image) use ($images) {
+                return in_array($image, $images, true);
+            }));
+            $images = array_values(array_unique(array_merge($requestedOrder, array_diff($images, $requestedOrder))));
 
             $displaySections = $request->display_sections ?? [];
 

@@ -316,7 +316,7 @@
                 <!-- Title + Stock -->
                 <div class="pd-title-row">
                     <h1 class="pd-title">{{ $product->name }}</h1>
-                    <span class="pd-stock" id="pd-stock" style="{{ $product->stock_quantity <= 0 ? 'background:#fdecea; color:#d32f2f;' : '' }}">{{ $product->stock_quantity > 0 ? 'In Stock' : 'Out of Stock' }}</span>
+                    <span class="pd-stock" id="pd-stock" style="{{ $product->is_out_of_stock ? 'background:#fdecea; color:#d32f2f;' : '' }}">{{ $product->is_out_of_stock ? 'Out of Stock' : 'In Stock' }}</span>
                 </div>
 
                 <!-- Rating -->
@@ -372,12 +372,13 @@
                     <!-- Size -->
                     <div class="pd-option-group" id="pd-size-group">
                         @php($sizes = $product->size ? $product->available_sizes : $product->available_age_groups)
-                        <p class="pd-option-label" style="display: none;">Size: <strong id="pd-size-val">{{ $sizes[0] }}</strong></p>
+                        @php($firstAvailableSize = collect($sizes)->first(fn ($size) => !$product->isSizeOutOfStock($size)) ?? ($sizes[0] ?? ''))
+                        <p class="pd-option-label" style="display: none;">Size: <strong id="pd-size-val">{{ $firstAvailableSize }}</strong></p>
                         {{-- Size Guide link temporarily disabled --}}
                         <div class="pd-sizes" style="margin-top:8px;">
                             @foreach($sizes as $index => $size)
-                                @php($outOfStock = array_key_exists($size, $product->size_stock ?? []) && ($product->size_stock[$size] ?? 0) <= 0)
-                                <button type="button" class="pd-size-btn {{ $index == 0 && !$outOfStock ? 'pd-size-btn--active' : '' }} {{ $outOfStock ? 'pd-size-btn--out' : '' }}" data-size="{{ $size }}" {{ $outOfStock ? 'disabled' : '' }}>{{ $size }}</button>
+                                @php($outOfStock = $product->isSizeOutOfStock($size))
+                                <button type="button" class="pd-size-btn {{ $size === $firstAvailableSize && !$outOfStock ? 'pd-size-btn--active' : '' }} {{ $outOfStock ? 'pd-size-btn--out' : '' }}" data-size="{{ $size }}" {{ $outOfStock ? 'disabled' : '' }}>{{ $size }}</button>
                             @endforeach
                         </div>
                     </div>
@@ -386,11 +387,12 @@
 
                 <form action="{{ route('cart.add') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="name" value="{{ $product->name }}">
                     <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->price }}">
                     <input type="hidden" name="image" value="{{ asset($product->images[0] ?? 'images/img-home/baby-wear.jpg') }}">
                     <input type="hidden" name="color" id="selected_color" value="{{ isset($colors) ? $colors[0] : '' }}">
-                    <input type="hidden" name="size" id="selected_size" value="{{ $sizes[0] }}">
+                    <input type="hidden" name="size" id="selected_size" value="{{ $firstAvailableSize }}">
                     
                     <input type="hidden" name="buy_now" id="buy_now_input" value="0">
                     
@@ -406,7 +408,7 @@
 
                     <!-- CTA Buttons -->
                     <div class="pd-cta-btns">
-                        @if(isset($product->stock_quantity) && $product->stock_quantity <= 0)
+                        @if($product->is_out_of_stock)
                             <button type="button" class="pd-btn-cart" disabled style="background: #ccc; cursor: not-allowed;">Out of Stock</button>
                         @else
                             <button type="submit" class="pd-btn-cart" id="pd-add-to-cart">Add to Cart</button>
@@ -647,21 +649,23 @@
 
 
     {{-- Testimonials Section --}}
-    <section style="max-width:1100px;margin:40px auto;padding:0 40px;">
-        <h2 style="font-size:20px;margin-bottom:18px;">Product Reviews</h2>
-        @if(session('success'))<div style="background:#d4edda;color:#155724;padding:12px;border-radius:6px;margin-bottom:16px;">{{ session('success') }}</div>@endif
-        @auth
-            <form action="{{ route('products.reviews.store', $product) }}" method="POST" style="border:1px solid #eee;padding:18px;border-radius:8px;margin-bottom:20px;">
-                @csrf
-                <strong>Write a Review</strong>
-                <select name="rating" style="margin:0 10px;padding:7px;">@for($rating=5;$rating>=1;$rating--)<option value="{{ $rating }}">{{ $rating }} Stars</option>@endfor</select>
-                <textarea name="review_text" required maxlength="1000" placeholder="Share your experience with this product" style="display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:5px;min-height:80px;"></textarea>
-                <button type="submit" style="margin-top:10px;background:#29b6f6;color:#fff;border:0;padding:10px 16px;border-radius:5px;font-weight:700;cursor:pointer;">Submit Review</button>
-            </form>
-        @else
-            <p style="margin-bottom:20px;"><a href="{{ route('login') }}" style="color:#0288d1;font-weight:700;">Log in</a> to write a review.</p>
-        @endauth
-    </section>
+    @isset($product)
+        <section style="max-width:1100px;margin:40px auto;padding:0 40px;">
+            <h2 style="font-size:20px;margin-bottom:18px;">Product Reviews</h2>
+            @if(session('success'))<div style="background:#d4edda;color:#155724;padding:12px;border-radius:6px;margin-bottom:16px;">{{ session('success') }}</div>@endif
+            @auth
+                <form action="{{ route('products.reviews.store', $product) }}" method="POST" style="border:1px solid #eee;padding:18px;border-radius:8px;margin-bottom:20px;">
+                    @csrf
+                    <strong>Write a Review</strong>
+                    <select name="rating" style="margin:0 10px;padding:7px;">@for($rating=5;$rating>=1;$rating--)<option value="{{ $rating }}">{{ $rating }} Stars</option>@endfor</select>
+                    <textarea name="review_text" required maxlength="1000" placeholder="Share your experience with this product" style="display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:5px;min-height:80px;"></textarea>
+                    <button type="submit" style="margin-top:10px;background:#29b6f6;color:#fff;border:0;padding:10px 16px;border-radius:5px;font-weight:700;cursor:pointer;">Submit Review</button>
+                </form>
+            @else
+                <p style="margin-bottom:20px;"><a href="{{ route('login') }}" style="color:#0288d1;font-weight:700;">Log in</a> to write a review.</p>
+            @endauth
+        </section>
+    @endisset
     @include('partials.testimonials')
     
     <!-- ════════════════════════════════

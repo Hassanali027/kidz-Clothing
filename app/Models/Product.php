@@ -119,4 +119,32 @@ class Product extends Model
             ? array_values(array_filter(array_map('trim', explode(',', $ageGroups))))
             : [$ageGroups];
     }
+
+    /**
+     * A product is unavailable when its main stock is empty, its status is set
+     * to out-of-stock, or every managed size/age group has zero quantity.
+     */
+    public function getIsOutOfStockAttribute(): bool
+    {
+        if ($this->status === 'out-of-stock' || (int) $this->stock_quantity <= 0) {
+            return true;
+        }
+
+        $sizeStock = $this->size_stock ?? [];
+
+        return !empty($sizeStock) && !collect($sizeStock)->contains(function ($quantity) {
+            return (int) $quantity > 0;
+        });
+    }
+
+    public function isSizeOutOfStock(?string $size): bool
+    {
+        if ($this->is_out_of_stock) {
+            return true;
+        }
+
+        $sizeStock = $this->size_stock ?? [];
+
+        return $size !== null && array_key_exists($size, $sizeStock) && (int) $sizeStock[$size] <= 0;
+    }
 }
