@@ -41,7 +41,6 @@ class PostExService
             'orderType' => 'Normal',
             'transactionNotes' => 'Kidz Wear order ' . $order->order_number,
             'pickupAddressCode' => (string) $pickupAddressCode,
-            'storeAddressCode' => (string) (config('services.postex.store_address_code') ?: $pickupAddressCode),
         ];
 
         $response = Http::timeout(20)
