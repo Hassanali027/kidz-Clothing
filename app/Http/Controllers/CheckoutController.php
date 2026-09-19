@@ -187,18 +187,15 @@ class CheckoutController extends Controller
                         throw new \RuntimeException('Only ' . $product->stock_quantity . ' item(s) are available for ' . $product->name . '.');
                     }
 
-                    $hasManagedSizeStock = !empty($sizeStock);
                     if ($size !== '' && array_key_exists($size, $sizeStock)) {
                         $sizeStock[$size] = (int) $sizeStock[$size] - $quantity;
                         $product->size_stock = $sizeStock;
                     }
 
-                    // When the product has age/size-wise stock, its main stock is
-                    // the sum of those quantities. This keeps product cards and the
-                    // detail page in sync after every completed order.
-                    $product->stock_quantity = $hasManagedSizeStock
-                        ? collect($sizeStock)->sum(function ($available) { return (int) $available; })
-                        : (int) $product->stock_quantity - $quantity;
+                    // Main stock is the total inventory entered by the admin. Always
+                    // deduct the purchased quantity from it; summing all age groups
+                    // here could incorrectly increase stock after a sale.
+                    $product->stock_quantity = max(0, (int) $product->stock_quantity - $quantity);
 
                     $product->save();
 
