@@ -20,7 +20,7 @@
         .address-box { border: 1px solid #d1d5db; border-radius: 6px; padding: 12px; min-height: 110px; }
         .address-box h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563; }
         .address-box p { margin: 4px 0; line-height: 1.45; }
-        .order-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; }
+        .order-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; }
         .meta-label { display: block; color: #6b7280; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; }
         .meta-value { font-weight: 700; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -67,12 +67,10 @@
                 </div>
             </div>
 
-            <div class="order-meta">
-                <div><span class="meta-label">Order Date</span><span class="meta-value">{{ $order->created_at->format('d M, Y h:i A') }}</span></div>
-                <div><span class="meta-label">Payment Method</span><span class="meta-value">{{ strtoupper($order->payment_method) }}</span></div>
-                <div><span class="meta-label">Order Status</span><span class="meta-value">{{ strtoupper($order->status) }}</span></div>
-                <div><span class="meta-label">Order Category</span><span class="meta-value">{{ \App\Models\Order::workflowCategories()[$order->workflow_category] ?? 'New Order' }}</span></div>
-            </div>
+                <div class="order-meta">
+                    <div><span class="meta-label">Order Date</span><span class="meta-value">{{ $order->created_at->format('d M, Y h:i A') }}</span></div>
+                    <div><span class="meta-label">Payment Method</span><span class="meta-value">{{ strtoupper($order->payment_method) }}</span></div>
+                </div>
 
             <table>
                 <thead>
