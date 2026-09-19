@@ -70,7 +70,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($product->status == 'active')
+                                    @if($product->is_out_of_stock)
+                                        <span class="status-badge status-danger">Out of Stock</span>
+                                    @elseif($product->status == 'active')
                                         <span class="status-badge status-success">Active</span>
                                     @elseif($product->status == 'inactive')
                                         <span class="status-badge status-pending">Inactive</span>
