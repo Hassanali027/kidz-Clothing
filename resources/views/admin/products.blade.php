@@ -59,7 +59,16 @@
                                         <strong>Rs. {{ number_format($product->price, 0) }}</strong>
                                     @endif
                                 </td>
-                                <td>{{ $product->stock_quantity }}</td>
+                                <td>
+                                    <strong>{{ $product->stock_quantity }}</strong>
+                                    @if(!empty($product->size_stock))
+                                        <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; max-width: 210px;">
+                                            @foreach($product->size_stock as $age => $quantity)
+                                                <span style="padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: 700; {{ (int) $quantity > 0 ? 'background:#dcfce7;color:#166534;' : 'background:#fee2e2;color:#b91c1c;text-decoration:line-through;' }}">{{ $age }}: {{ (int) $quantity > 0 ? $quantity : 'Out' }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($product->status == 'active')
                                         <span class="status-badge status-success">Active</span>

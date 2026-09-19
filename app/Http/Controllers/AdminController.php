@@ -386,7 +386,9 @@ class AdminController extends Controller
                 'color' => 'nullable|string|max:255',
                 'size' => 'nullable|string|max:255',
                 'review_count' => 'nullable|integer|min:0',
-                'size_stock_input' => 'nullable|string|max:1000'
+                'size_stock_input' => 'nullable|string|max:1000',
+                'size_stock' => 'nullable|array',
+                'size_stock.*' => 'nullable|integer|min:0'
             ]);
 
             $productType = $this->resolveProductType($request);
@@ -428,10 +430,7 @@ class AdminController extends Controller
                 }
             }
 
-            $sizeStock = $this->parseSizeStock($request->size_stock_input);
-            $stockQuantity = !empty($sizeStock)
-                ? collect($sizeStock)->sum(function ($quantity) { return (int) $quantity; })
-                : (int) $request->stock_quantity;
+            $sizeStock = $this->parseSizeStock($request->input('size_stock', $request->size_stock_input));
             $product = Product::create([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -441,7 +440,7 @@ class AdminController extends Controller
                 'sale_price' => $request->sale_price,
                 'description' => $request->description,
                 'images' => $images,
-                'stock_quantity' => $stockQuantity,
+                'stock_quantity' => (int) $request->stock_quantity,
                 'status' => $request->status,
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
@@ -492,6 +491,8 @@ class AdminController extends Controller
                 'size' => 'nullable|string|max:255',
                 'review_count' => 'nullable|integer|min:0',
                 'size_stock_input' => 'nullable|string|max:1000',
+                'size_stock' => 'nullable|array',
+                'size_stock.*' => 'nullable|integer|min:0',
                 'image_order' => 'nullable|array',
                 'image_order.*' => 'string|max:1000'
             ]);
@@ -559,10 +560,7 @@ class AdminController extends Controller
                 }
             }
 
-            $sizeStock = $this->parseSizeStock($request->size_stock_input);
-            $stockQuantity = !empty($sizeStock)
-                ? collect($sizeStock)->sum(function ($quantity) { return (int) $quantity; })
-                : (int) $request->stock_quantity;
+            $sizeStock = $this->parseSizeStock($request->input('size_stock', $request->size_stock_input));
             $product->update([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -572,7 +570,7 @@ class AdminController extends Controller
                 'sale_price' => $request->sale_price,
                 'description' => $request->description,
                 'images' => $images,
-                'stock_quantity' => $stockQuantity,
+                'stock_quantity' => (int) $request->stock_quantity,
                 'status' => $request->status,
                 'display_sections' => $displaySections,
                 'related_products' => is_array($request->related_products) ? array_map('intval', $request->related_products) : [],
@@ -1105,6 +1103,17 @@ class AdminController extends Controller
     private function parseSizeStock($input)
     {
         $stock = [];
+
+        if (is_array($input)) {
+            foreach ($input as $age => $quantity) {
+                $age = trim((string) $age);
+                if ($age !== '' && is_numeric($quantity)) {
+                    $stock[$age] = max(0, (int) $quantity);
+                }
+            }
+
+            return $stock;
+        }
 
         foreach (explode(',', (string) $input) as $entry) {
             $parts = array_map('trim', explode(':', $entry, 2));

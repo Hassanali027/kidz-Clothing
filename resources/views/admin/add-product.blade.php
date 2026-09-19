@@ -446,6 +446,7 @@
                     var editor = document.querySelector('.age-stock-editor');
                     var hiddenInput = document.querySelector('.age-stock-input');
                     var stored = {};
+                    var stockFieldsChanged = false;
 
                     function renderStockFields() {
                         var ages = ageInput.value.split(',').map(function (age) { return age.trim(); }).filter(Boolean);
@@ -455,14 +456,27 @@
                         ages.forEach(function (age) {
                             var row = document.createElement('div');
                             row.style.cssText = 'display:flex; align-items:center; gap:10px; margin-bottom:8px; max-width:300px;';
-                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + (values[age] || stored[age] || 0) + '">';
+                            var hasCurrentValue = Object.prototype.hasOwnProperty.call(values, age);
+                            var hasSavedValue = Object.prototype.hasOwnProperty.call(stored, age);
+                            var quantity = hasCurrentValue ? values[age] : (hasSavedValue ? stored[age] : 0);
+                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + quantity + '">';
                             editor.appendChild(row);
                         });
                     }
 
                     ageInput.addEventListener('input', renderStockFields);
+                    editor.addEventListener('input', function (event) {
+                        if (event.target.matches('input[data-age]')) stockFieldsChanged = true;
+                    });
                     ageInput.closest('form').addEventListener('submit', function () {
-                        hiddenInput.value = Array.prototype.map.call(editor.querySelectorAll('input[data-age]'), function (input) { return input.dataset.age + ':' + input.value; }).join(', ');
+                        Array.prototype.forEach.call(editor.querySelectorAll('input[data-age]'), function (input) {
+                            if (stockFieldsChanged) {
+                                input.name = 'size_stock[' + input.dataset.age + ']';
+                            } else {
+                                input.removeAttribute('name');
+                            }
+                        });
+                        hiddenInput.value = '';
                     });
                     renderStockFields();
                 })();

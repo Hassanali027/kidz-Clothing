@@ -612,9 +612,15 @@
                         if (event.target.matches('input[data-age]')) stockFieldsChanged = true;
                     });
                     ageInput.closest('form').addEventListener('submit', function () {
-                        hiddenInput.value = hasManagedSizeStock || stockFieldsChanged
-                            ? Array.prototype.map.call(editor.querySelectorAll('input[data-age]'), function (input) { return input.dataset.age + ':' + input.value; }).join(', ')
-                            : '';
+                        var shouldSaveAgeStock = hasManagedSizeStock || stockFieldsChanged;
+                        Array.prototype.forEach.call(editor.querySelectorAll('input[data-age]'), function (input) {
+                            if (shouldSaveAgeStock) {
+                                input.name = 'size_stock[' + input.dataset.age + ']';
+                            } else {
+                                input.removeAttribute('name');
+                            }
+                        });
+                        hiddenInput.value = '';
                     });
                     renderStockFields();
                 })();

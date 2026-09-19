@@ -194,10 +194,12 @@ class CheckoutController extends Controller
                         $product->size_stock = $sizeStock;
                     }
 
-                    // Main stock is the total inventory entered by the admin. Always
-                    // deduct the purchased quantity from it; summing all age groups
-                    // here could incorrectly increase stock after a sale.
-                    $product->stock_quantity = max(0, (int) $product->stock_quantity - $quantity);
+                    // Age/size-wise stock is independent: buying 1-2Y must only
+                    // reduce 1-2Y, while other available ages remain purchasable.
+                    // Main stock is used only for products without age-wise stock.
+                    if (empty($sizeStock)) {
+                        $product->stock_quantity = max(0, (int) $product->stock_quantity - $quantity);
+                    }
 
                     $product->save();
 
