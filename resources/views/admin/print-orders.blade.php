@@ -45,7 +45,7 @@
         @endphp
         <section class="print-order">
             <header class="print-header">
-                <div class="brand">Kidz <span>Wear</span></div>
+                <div class="brand">Kids <span>Wear</span></div>
                 <div class="invoice-title">
                     <h1>ORDER SHEET</h1>
                     <div class="muted">Order # {{ $order->order_number }}</div>
