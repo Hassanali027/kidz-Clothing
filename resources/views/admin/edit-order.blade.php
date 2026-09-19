@@ -27,6 +27,10 @@
                     <label>Delivery Address</label>
                     <textarea name="address" class="form-control" rows="3" required>{{ old('address', $order->address) }}</textarea>
                 </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Customer Delivery Note</label>
+                    <textarea name="delivery_note" class="form-control" rows="3" maxlength="1000" placeholder="No delivery note provided">{{ old('delivery_note', $order->delivery_note) }}</textarea>
+                </div>
                 <div class="form-group">
                     <label>City</label>
                     <input name="city" class="form-control" value="{{ old('city', $order->city) }}" required>

@@ -91,6 +91,12 @@
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Delivery Address</p>
                         <p style="font-weight: 600; font-size: 16px; line-height: 1.5;">{{ $order->address }}</p>
                     </div>
+                    @if($order->delivery_note)
+                        <div style="grid-column: 1 / -1;">
+                            <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Customer Delivery Note</p>
+                            <p style="font-weight: 600; font-size: 16px; line-height: 1.5; white-space: pre-line;">{{ $order->delivery_note }}</p>
+                        </div>
+                    @endif
                     <div>
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">City</p>
                         <p style="font-weight: 600; font-size: 16px;">{{ $order->city }}</p>

@@ -53,17 +53,12 @@
             </header>
 
             <div class="address-grid">
-                <div class="address-box">
+                <div class="address-box" style="grid-column: 1 / -1;">
                     <h3>Customer & Shipping Details</h3>
                     <p><strong>{{ $order->first_name }} {{ $order->last_name }}</strong></p>
                     <p>{{ $order->address }}</p>
                     <p>{{ $order->city }}</p>
                     <p>Phone: {{ $order->phone }}</p>
-                </div>
-                <div class="address-box">
-                    <h3>Delivery Note</h3>
-                    <p>Please deliver this order to the address shown.</p>
-                    <p class="muted">Customer should be contacted before delivery if needed.</p>
                 </div>
             </div>
 

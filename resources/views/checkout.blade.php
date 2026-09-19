@@ -263,6 +263,10 @@
                             <label class="checkout-label">Address</label>
                             <input type="text" name="address" class="checkout-input" value="{{ old('address', auth()->user()->address ?? '') }}" placeholder="House #, Street, Area" required>
                         </div>
+                        <div class="checkout-form-group full">
+                            <label class="checkout-label">Delivery Note <span style="font-weight:400; color:#888;">(Optional)</span></label>
+                            <textarea name="delivery_note" class="checkout-input" rows="3" maxlength="1000" placeholder="e.g. Call before delivery, leave parcel with guard">{{ old('delivery_note') }}</textarea>
+                        </div>
                         <div class="checkout-form-group">
                             <label class="checkout-label">City</label>
                             <input type="text" name="city" class="checkout-input" value="{{ old('city', auth()->user()->city ?? '') }}" placeholder="Enter your city" required>

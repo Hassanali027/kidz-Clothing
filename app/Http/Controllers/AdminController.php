@@ -958,6 +958,7 @@ class AdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'address' => 'required|string|max:1000',
+            'delivery_note' => 'nullable|string|max:1000',
             'city' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
             'payment_method' => 'required|in:cod,online',
@@ -1008,7 +1009,7 @@ class AdminController extends Controller
                 CouponUsage::where('order_id', $order->id)->delete();
 
                 $order->update(array_merge($request->only([
-                    'first_name', 'last_name', 'address', 'city', 'phone', 'payment_method', 'status', 'workflow_category',
+                    'first_name', 'last_name', 'address', 'delivery_note', 'city', 'phone', 'payment_method', 'status', 'workflow_category',
                 ]), [
                     'coupon_code' => $coupon ? $coupon->code : null,
                     'discount_amount' => $discountAmount,
