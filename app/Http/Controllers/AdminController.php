@@ -867,10 +867,21 @@ class AdminController extends Controller
         if (!array_key_exists($selectedCategory, $categories)) {
             $selectedCategory = '';
         }
+        $search = trim((string) $request->query('search', ''));
 
         $newOrdersCount = Order::where('is_new', true)->count();
         $orders = Order::when($selectedCategory, function ($query) use ($selectedCategory) {
                 $query->where('workflow_category', $selectedCategory);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $like = '%' . $search . '%';
+                $query->where(function ($searchQuery) use ($like) {
+                    $searchQuery->where('order_number', 'like', $like)
+                        ->orWhere('phone', 'like', $like)
+                        ->orWhere('first_name', 'like', $like)
+                        ->orWhere('last_name', 'like', $like)
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
+                });
             })
             ->orderBy('created_at', 'desc')
             ->get();
@@ -894,6 +905,7 @@ class AdminController extends Controller
             'orders' => $orders,
             'categories' => $categories,
             'selectedCategory' => $selectedCategory,
+            'search' => $search,
             'newOrdersCount' => $newOrdersCount,
         ]);
     }

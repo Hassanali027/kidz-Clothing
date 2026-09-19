@@ -23,6 +23,10 @@
         @endif
 
         <form method="GET" action="{{ route('admin.orders') }}" style="display: flex; align-items: end; gap: 12px; flex-wrap: wrap; margin: 0 0 20px;">
+            <div class="form-group" style="margin: 0; min-width: 300px; flex: 1; max-width: 460px;">
+                <label for="order-search">Search Orders</label>
+                <input id="order-search" type="search" name="search" value="{{ $search }}" class="form-control" placeholder="Customer name, phone number or order number">
+            </div>
             <div class="form-group" style="margin: 0; min-width: 240px;">
                 <label for="order-category-filter">Filter by Order Category</label>
                 <select id="order-category-filter" name="category" class="form-control" onchange="this.form.submit()">
@@ -32,7 +36,10 @@
                     @endforeach
                 </select>
             </div>
-            @if($selectedCategory)
+            <button type="submit" class="btn-secondary" style="padding: 10px 14px;">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+            </button>
+            @if($selectedCategory || $search)
                 <a href="{{ route('admin.orders') }}" class="btn-secondary" style="text-decoration: none; padding: 10px 14px;">Clear Filter</a>
             @endif
             <button type="button" id="print-selected-orders" class="btn-primary" disabled style="padding: 10px 14px;">
@@ -115,7 +122,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">No orders found for this category.</td>
+                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">No orders found{{ $search ? ' for “' . $search . '”' : '' }}{{ $selectedCategory ? ' in this category' : '' }}.</td>
                         </tr>
                     @endforelse
                 </tbody>
