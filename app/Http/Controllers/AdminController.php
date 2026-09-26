@@ -174,6 +174,7 @@ class AdminController extends Controller
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
         $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
         $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
+        $newArrivalsBanner = SiteSetting::get('new_arrivals_banner', 'images/img-home/boys-wear.jpg');
         
         $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
         $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');
@@ -208,6 +209,7 @@ class AdminController extends Controller
             'heroBanner3' => $heroBanner3,
             'ctaBanner' => $ctaBanner,
             'preFeaturedBanner' => $preFeaturedBanner,
+            'newArrivalsBanner' => $newArrivalsBanner,
             'preFeaturedTitle' => $preFeaturedTitle,
             'preFeaturedSubtitle' => $preFeaturedSubtitle,
             'preFeaturedBtnText' => $preFeaturedBtnText,
@@ -230,7 +232,7 @@ class AdminController extends Controller
     {
         try {
             $request->validate([
-                'banner_type' => 'required|in:hero,hero_1,hero_2,hero_3,cta,pre_featured,category_boys,category_girls,category_baby,category_party',
+                'banner_type' => 'required|in:hero,hero_1,hero_2,hero_3,cta,pre_featured,new_arrivals,category_boys,category_girls,category_baby,category_party',
                 'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'title' => 'nullable|string|max:255',
                 'subtitle' => 'nullable|string|max:255',

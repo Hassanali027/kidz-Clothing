@@ -363,7 +363,7 @@
             <!-- Left Promo Card -->
             <a href="{{ route('products.index') }}" class="na-promo" style="text-decoration:none;">
                 <div class="na-promo-img">
-                    <img src="{{ asset('images/img-home/boys-wear.jpg') }}" alt="New Arrivals">
+                    <img src="{{ asset($newArrivalsBanner ?? 'images/img-home/boys-wear.jpg') }}" alt="New Arrivals">
                 </div>
                 <div class="na-promo-text">
                     <h3 class="na-promo-title">New Arrivals</h3>

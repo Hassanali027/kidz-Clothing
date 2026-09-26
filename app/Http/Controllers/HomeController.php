@@ -21,6 +21,7 @@ class HomeController extends Controller
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
         $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
         $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
+        $newArrivalsBanner = SiteSetting::get('new_arrivals_banner', 'images/img-home/boys-wear.jpg');
         
         $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
         $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');
@@ -92,6 +93,7 @@ class HomeController extends Controller
             'heroBanner3' => $heroBanner3,
             'ctaBanner' => $ctaBanner,
             'preFeaturedBanner' => $preFeaturedBanner,
+            'newArrivalsBanner' => $newArrivalsBanner,
             'preFeaturedTitle' => $preFeaturedTitle,
             'preFeaturedSubtitle' => $preFeaturedSubtitle,
             'preFeaturedBtnText' => $preFeaturedBtnText,
