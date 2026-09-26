@@ -359,7 +359,7 @@
         <div class="na-inner">
 
             <!-- Left Promo Card -->
-            <a href="{{ route('products.index') }}" class="na-promo" style="text-decoration:none;">
+            <a href="{{ route('products.index', ['new_arrivals' => 1]) }}" class="na-promo" style="text-decoration:none;">
                 <div class="na-promo-img">
                     <img src="{{ asset($newArrivalsBanner ?? 'images/img-home/boys-wear.jpg') }}" alt="New Arrivals">
                 </div>
@@ -373,7 +373,7 @@
             <!-- Right Product Cards (Desktop - 3 cards) -->
             <div class="na-right">
                 <div class="na-right-header">
-                    <a href="{{ route('categories.index') }}" class="na-view-all">View All</a>
+                    <a href="{{ route('products.index', ['new_arrivals' => 1]) }}" class="na-view-all">View All</a>
                 </div>
                 <div class="na-grid">
                     @forelse($newArrivals->take(3) as $product)
@@ -439,8 +439,8 @@
             </div>
 
             <div class="na-mobile-actions">
-                <a href="{{ route('products.index') }}" class="na-mobile-btn na-mobile-btn--primary">Shop Now</a>
-                <a href="{{ route('categories.index') }}" class="na-mobile-btn na-mobile-btn--secondary">View All</a>
+                <a href="{{ route('products.index', ['new_arrivals' => 1]) }}" class="na-mobile-btn na-mobile-btn--primary">Shop Now</a>
+                <a href="{{ route('products.index', ['new_arrivals' => 1]) }}" class="na-mobile-btn na-mobile-btn--secondary">View All</a>
             </div>
         </div>
 

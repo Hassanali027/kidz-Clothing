@@ -12,11 +12,15 @@ class ProductController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::where('status', 'active')
+        $productsQuery = Product::where('status', 'active')
+            ->when($request->boolean('new_arrivals'), function ($query) {
+                $query->whereJsonContains('display_sections', 'new_arrivals');
+            })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ;
+        $products = $productsQuery->get();
             
         return view('product', compact('products'));
     }
