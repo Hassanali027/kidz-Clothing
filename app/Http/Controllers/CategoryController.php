@@ -104,41 +104,7 @@ class CategoryController extends Controller
         $productTypes = $this->getProductTypes();
         $ageGroups = $this->getAgeGroups($category->name);
 
-        // Database diagnostics log
-        try {
-            $diagnostics = [
-                'timestamp' => date('Y-m-d H:i:s'),
-                'requested_slug' => $slug,
-                'size_filter' => $sizeFilter,
-                'price_range' => ['min' => $minPrice, 'max' => $maxPrice],
-                'resolved_category' => [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'slug' => $category->slug,
-                    'status' => $category->status,
-                ],
-                'unique_product_categories' => Product::select('category')->distinct()->pluck('category')->toArray(),
-                'all_products_count' => Product::count(),
-                'active_products_count' => Product::where('status', 'active')->count(),
-                'matched_products_count' => count($products),
-                'matched_products' => $products->map(function($p) {
-                    return [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'price' => $p->price,
-                        'sale_price' => $p->sale_price,
-                        'status' => $p->status,
-                        'stock' => $p->stock_quantity,
-                        'category' => $p->category,
-                        'age_group' => $p->age_group,
-                        'product_type' => $p->product_type,
-                    ];
-                })->toArray(),
-            ];
-            file_put_contents(public_path('diagnostics.json'), json_encode($diagnostics, JSON_PRETTY_PRINT));
-        } catch (\Exception $e) {
-            // ignore
-        }
+
 
         return view('Category-Page', [
             'pageTitle'       => $category->name . ' | Kidz Wear',

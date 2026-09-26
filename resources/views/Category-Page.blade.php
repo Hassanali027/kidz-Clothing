@@ -112,19 +112,22 @@
         </a>
         <span class="cp-bc-sep">›</span>
         <a href="{{ route('categories.index') }}">Categories</a>
-        @isset($categorySlug)
+        @if(!empty($categorySlug))
             <span class="cp-bc-sep">›</span>
             <span class="cp-bc-current">{{ $categoryName ?? ucfirst(str_replace('-', ' ', $categorySlug)) }}</span>
-        @endisset
+        @elseif(!empty($categoryName))
+            <span class="cp-bc-sep">›</span>
+            <span class="cp-bc-current">{{ $categoryName }}</span>
+        @endif
     </nav>
 
     <!-- Page Title -->
     <h1 class="cp-page-title">
-        @isset($categorySlug)
+        @if(!empty($categorySlug))
             {{ $categoryName ?? ucfirst(str_replace('-', ' ', $categorySlug)) }}
         @else
-            All Categories
-        @endisset
+            {{ $categoryName ?? 'All Categories' }}
+        @endif
     </h1>
 
     <!-- Toolbar -->
@@ -373,12 +376,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="cp-pagination" id="cp-pagination">
-            <button class="cp-page-btn cp-page-btn--active" id="cp-pg-1">1</button>
-            <button class="cp-page-btn" id="cp-pg-2">2</button>
-            <button class="cp-page-btn" id="cp-pg-3">3</button>
-            <button class="cp-page-btn cp-page-next" id="cp-pg-next">Next ›</button>
-        </div>
+        <div class="cp-pagination" id="cp-pagination" style="display: none;"></div>
     </div>
 
     <!-- ════════════════════════════════
@@ -1016,6 +1014,11 @@
                 // Reload page with new URL
                 window.location.href = currentUrl.toString();
             });
+        }
+
+        // Run initial filter, sort, and pagination check on page load
+        if (typeof applyFiltersAndSort === 'function') {
+            applyFiltersAndSort();
         }
     </script>
 

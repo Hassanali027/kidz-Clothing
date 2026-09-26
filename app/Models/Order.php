@@ -75,4 +75,63 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Restore stock for items in this order when cancelled or deleted.
+     */
+    public function restoreStock(): void
+    {
+        $this->loadMissing('items.product');
+
+        foreach ($this->items as $item) {
+            $product = $item->product ?? Product::find($item->product_id);
+            if (!$product) {
+                continue;
+            }
+
+            $quantity = max(1, (int) $item->quantity);
+            $size = trim((string) ($item->size ?? ''));
+            $sizeStock = $product->size_stock ?? [];
+
+            if ($size !== '' && is_array($sizeStock) && array_key_exists($size, $sizeStock)) {
+                $sizeStock[$size] = (int) $sizeStock[$size] + $quantity;
+                $product->size_stock = $sizeStock;
+            }
+
+            $product->stock_quantity = (int) $product->stock_quantity + $quantity;
+
+            if ($product->status === 'out-of-stock' && $product->stock_quantity > 0) {
+                $product->status = 'active';
+            }
+
+            $product->save();
+        }
+    }
+
+    /**
+     * Re-deduct stock for items in this order if un-cancelled.
+     */
+    public function deductStock(): void
+    {
+        $this->loadMissing('items.product');
+
+        foreach ($this->items as $item) {
+            $product = $item->product ?? Product::find($item->product_id);
+            if (!$product) {
+                continue;
+            }
+
+            $quantity = max(1, (int) $item->quantity);
+            $size = trim((string) ($item->size ?? ''));
+            $sizeStock = $product->size_stock ?? [];
+
+            if ($size !== '' && is_array($sizeStock) && array_key_exists($size, $sizeStock)) {
+                $sizeStock[$size] = max(0, (int) $sizeStock[$size] - $quantity);
+                $product->size_stock = $sizeStock;
+            }
+
+            $product->stock_quantity = max(0, (int) $product->stock_quantity - $quantity);
+            $product->save();
+        }
+    }
 }

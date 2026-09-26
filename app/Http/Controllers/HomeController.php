@@ -21,7 +21,7 @@ class HomeController extends Controller
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
         $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
         $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
-        $newArrivalsBanner = SiteSetting::get('new_arrivals_banner', 'images/img-home/boys-wear.jpg');
+        $newArrivalsBannerSetting = SiteSetting::get('new_arrivals_banner');
         
         $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
         $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');
@@ -51,6 +51,12 @@ class HomeController extends Controller
             ->whereJsonContains('display_sections', 'new_arrivals')
             ->take(4)
             ->get();
+
+        if ($newArrivals->count() > 0 && !empty($newArrivals->first()->images[0])) {
+            $newArrivalsBanner = $newArrivals->first()->images[0];
+        } else {
+            $newArrivalsBanner = 'images/img-home/boys-wear.jpg';
+        }
 
         $shopByCategory = [
             'boys' => Product::where('status', 'active')

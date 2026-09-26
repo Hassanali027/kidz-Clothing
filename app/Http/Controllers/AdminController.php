@@ -1008,6 +1008,15 @@ class AdminController extends Controller
                 // Remove any previous one-time coupon usage recorded for this order.
                 CouponUsage::where('order_id', $order->id)->delete();
 
+                $oldStatus = $order->status;
+                $newStatus = $request->status;
+
+                if ($oldStatus !== 'cancelled' && $newStatus === 'cancelled') {
+                    $order->restoreStock();
+                } elseif ($oldStatus === 'cancelled' && $newStatus !== 'cancelled') {
+                    $order->deductStock();
+                }
+
                 $order->update(array_merge($request->only([
                     'first_name', 'last_name', 'address', 'delivery_note', 'city', 'phone', 'payment_method', 'status', 'workflow_category',
                 ]), [
@@ -1049,6 +1058,9 @@ class AdminController extends Controller
     {
         try {
             $order = Order::findOrFail($id);
+            if ($order->status !== 'cancelled') {
+                $order->restoreStock();
+            }
             $order->delete();
             return redirect()->route('admin.orders')->with('success', 'Order deleted successfully!');
         } catch (\Exception $e) {
@@ -1064,7 +1076,16 @@ class AdminController extends Controller
             ]);
 
             $order = Order::findOrFail($id);
-            $order->update(['status' => $request->status, 'is_new' => false]);
+            $oldStatus = $order->status;
+            $newStatus = $request->status;
+
+            if ($oldStatus !== 'cancelled' && $newStatus === 'cancelled') {
+                $order->restoreStock();
+            } elseif ($oldStatus === 'cancelled' && $newStatus !== 'cancelled') {
+                $order->deductStock();
+            }
+
+            $order->update(['status' => $newStatus, 'is_new' => false]);
 
             return redirect()->back()->with('success', 'Order status updated successfully!');
         } catch (\Exception $e) {

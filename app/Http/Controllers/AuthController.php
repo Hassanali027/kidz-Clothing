@@ -128,6 +128,7 @@ class AuthController extends Controller
         }
 
         $order->update(['status' => 'cancelled']);
+        $order->restoreStock();
 
         return redirect()->back()->with('success', 'Order cancelled successfully.');
     }

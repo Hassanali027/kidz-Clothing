@@ -57,7 +57,7 @@
                     <label>Age Group</label>
                     <input type="text" name="age_group" class="form-control" value="{{ old('age_group', $product->age_group) }}" placeholder="e.g. 2-5, 5-8, 8-10" required>
                     <small style="color: #666;">For multiple age groups, separate each option with a comma.</small>
-                    <div class="age-stock-editor" data-stock="{{ e(json_encode($product->size_stock ?? [])) }}" style="margin-top:14px;"></div>
+                    <div class="age-stock-editor" data-stock="{{ json_encode($product->size_stock ?? []) }}" style="margin-top:14px;"></div>
                     <input type="hidden" name="size_stock_input" class="age-stock-input">
                     <small style="color: #666;">Age-wise quantities are saved only when you set them. They will not automatically copy the total stock into every age group.</small>
                 </div>
@@ -582,14 +582,15 @@
                     var editor = document.querySelector('.age-stock-editor');
                     var hiddenInput = document.querySelector('.age-stock-input');
                     var stored = {};
-                    var hasManagedSizeStock = false;
-                    var stockFieldsChanged = false;
                     try {
-                        stored = JSON.parse(editor.dataset.stock || '{}');
+                        var rawStock = editor ? (editor.dataset.stock || '{}') : '{}';
+                        if (rawStock.indexOf('&quot;') !== -1) {
+                            rawStock = rawStock.replace(/&quot;/g, '"');
+                        }
+                        stored = JSON.parse(rawStock);
                     } catch (error) {
                         stored = {};
                     }
-                    hasManagedSizeStock = Object.keys(stored).length > 0;
 
                     function renderStockFields() {
                         var ages = ageInput.value.split(',').map(function (age) { return age.trim(); }).filter(Boolean);
@@ -602,23 +603,15 @@
                             var quantity = hasCurrentValue ? values[age] : (hasSavedValue ? stored[age] : 0);
                             var row = document.createElement('div');
                             row.style.cssText = 'display:flex; align-items:center; gap:10px; margin-bottom:8px; max-width:300px;';
-                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" data-age="' + age + '" value="' + quantity + '">';
+                            row.innerHTML = '<span style="min-width:70px; font-weight:600;">' + age + '</span><input type="number" min="0" class="form-control" name="size_stock[' + age + ']" data-age="' + age + '" value="' + quantity + '">';
                             editor.appendChild(row);
                         });
                     }
 
                     ageInput.addEventListener('input', renderStockFields);
-                    editor.addEventListener('input', function (event) {
-                        if (event.target.matches('input[data-age]')) stockFieldsChanged = true;
-                    });
                     ageInput.closest('form').addEventListener('submit', function () {
-                        var shouldSaveAgeStock = hasManagedSizeStock || stockFieldsChanged;
                         Array.prototype.forEach.call(editor.querySelectorAll('input[data-age]'), function (input) {
-                            if (shouldSaveAgeStock) {
-                                input.name = 'size_stock[' + input.dataset.age + ']';
-                            } else {
-                                input.removeAttribute('name');
-                            }
+                            input.name = 'size_stock[' + input.dataset.age + ']';
                         });
                         hiddenInput.value = '';
                     });
