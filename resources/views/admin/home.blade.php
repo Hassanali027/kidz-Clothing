@@ -50,6 +50,29 @@
         </form>
     </div>
 
+    <div class="content-card" style="margin-bottom: 20px;">
+        <div class="card-header">
+            <h2>New Arrivals Card Image (Optional Banner)</h2>
+            <small style="color: #666;">Upload a custom image for the left promo card in the New Arrivals section. If no custom image is set, it will automatically display the product photo of the top New Arrival product.</small>
+        </div>
+        <form action="{{ route('admin.home.updateBanner') }}" method="POST" enctype="multipart/form-data" class="admin-form">
+            @csrf
+            <input type="hidden" name="banner_type" value="new_arrivals">
+            <div class="form-group">
+                <label>Current Card Image</label>
+                <div style="margin-bottom: 15px;">
+                    <img src="{{ asset($newArrivalsBanner) }}?v={{ time() }}" alt="New Arrivals" style="max-width: 360px; width: 100%; height: 220px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Upload New Image</label>
+                <input type="file" name="banner_image" class="form-control" accept="image/*" required>
+                <small style="color: #666; font-size: 13px;">JPG, PNG, GIF or WEBP - Max 5MB</small>
+            </div>
+            <button type="submit" class="btn-primary">Update New Arrivals Image</button>
+        </form>
+    </div>
+
 
 
     <div class="content-card" style="margin-bottom: 20px;">

@@ -172,9 +172,19 @@ class AdminController extends Controller
         $heroBanner1 = SiteSetting::get('hero_1_banner', SiteSetting::get('hero_banner', 'images/img-home/hero-banner.jpg'));
         $heroBanner2 = SiteSetting::get('hero_2_banner', 'images/img-home/hero-banner.jpg');
         $heroBanner3 = SiteSetting::get('hero_3_banner', 'images/img-home/hero-banner.jpg');
-        $ctaBanner = SiteSetting::get('cta_banner', 'images/img-home/home-cta.jpg');
-        $preFeaturedBanner = SiteSetting::get('pre_featured_banner', 'images/img-home/home-cta.jpg');
-        $newArrivalsBanner = SiteSetting::get('new_arrivals_banner', 'images/img-home/boys-wear.jpg');
+        $newArrivalsBannerSetting = SiteSetting::get('new_arrivals_banner');
+        $topNewArrival = Product::where('status', 'active')
+            ->whereJsonContains('display_sections', 'new_arrivals')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($newArrivalsBannerSetting && $newArrivalsBannerSetting !== 'images/img-home/boys-wear.jpg') {
+            $newArrivalsBanner = $newArrivalsBannerSetting;
+        } elseif ($topNewArrival && !empty($topNewArrival->images[0])) {
+            $newArrivalsBanner = $topNewArrival->images[0];
+        } else {
+            $newArrivalsBanner = 'images/img-home/boys-wear.jpg';
+        }
         
         $preFeaturedTitle = SiteSetting::get('pre_featured_title', 'Summer Sale');
         $preFeaturedSubtitle = SiteSetting::get('pre_featured_subtitle', 'Up to 50% Off on Kids Collection');

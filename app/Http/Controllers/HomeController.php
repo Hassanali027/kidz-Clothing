@@ -47,12 +47,17 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $newArrivalsBannerSetting = SiteSetting::get('new_arrivals_banner');
+
         $newArrivals = Product::where('status', 'active')
             ->whereJsonContains('display_sections', 'new_arrivals')
+            ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
 
-        if ($newArrivals->count() > 0 && !empty($newArrivals->first()->images[0])) {
+        if ($newArrivalsBannerSetting && $newArrivalsBannerSetting !== 'images/img-home/boys-wear.jpg') {
+            $newArrivalsBanner = $newArrivalsBannerSetting;
+        } elseif ($newArrivals->count() > 0 && !empty($newArrivals->first()->images[0])) {
             $newArrivalsBanner = $newArrivals->first()->images[0];
         } else {
             $newArrivalsBanner = 'images/img-home/boys-wear.jpg';
