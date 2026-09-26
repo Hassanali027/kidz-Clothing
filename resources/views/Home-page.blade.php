@@ -171,8 +171,6 @@
                 $categoryMap = [
                     'boys' => ['name' => 'Boys Wear', 'key' => 'boys'],
                     'girls' => ['name' => 'Girls Wear', 'key' => 'girls'],
-                    'baby' => ['name' => 'Baby Clothing', 'key' => 'baby'],
-                    'party' => ['name' => 'Party Wear', 'key' => 'party'],
                 ];
             @endphp
 
