@@ -336,20 +336,23 @@
         .table-responsive { width: 100%; overflow-x: auto; }
         .orders-table { table-layout: fixed; }
         .orders-table th, .orders-table td { padding: 12px 8px; vertical-align: middle; overflow-wrap: anywhere; }
-        .orders-table th:nth-child(1) { width: 44px; }
-        .orders-table th:nth-child(2) { width: 11%; }
-        .orders-table th:nth-child(3) { width: 14%; }
-        .orders-table th:nth-child(4) { width: 8%; }
-        .orders-table th:nth-child(5) { width: 10%; }
-        .orders-table th:nth-child(6) { width: 14%; }
+        .orders-table th:nth-child(1) { width: 4%; }
+        .orders-table th:nth-child(2) { width: 9%; }
+        .orders-table th:nth-child(3) { width: 12%; }
+        .orders-table th:nth-child(4) { width: 7%; }
+        .orders-table th:nth-child(5) { width: 9%; }
+        .orders-table th:nth-child(6) { width: 12%; }
         .orders-table th:nth-child(7) { width: 13%; }
-        .orders-table th:nth-child(8) { width: 11%; }
+        .orders-table th:nth-child(8) { width: 10%; }
         .orders-table th:nth-child(9) { width: 10%; }
-        .orders-table th:nth-child(10) { width: 11%; }
+        .orders-table th:nth-child(10) { width: 14%; }
         .orders-table .action-btns { display: flex; flex-wrap: wrap; gap: 4px; }
         .orders-table .btn-action { width: 30px; height: 30px; margin-right: 0; }
         .orders-table .postex-tracking { max-width: 100%; }
         .orders-table .payment-status-badge { padding: 5px 8px; font-size: 11px; white-space: normal; text-align: center; }
+        .orders-table .status-select { width: 100%; max-width: 115px; padding: 8px 6px; text-align: center; }
+        .orders-table td:nth-child(8), .orders-table td:nth-child(9) { min-width: 0; }
+        .orders-table td:nth-child(9) { line-height: 1.35; }
         @media (max-width: 1199px) {
             .orders-table { min-width: 1080px; table-layout: auto; }
         }
