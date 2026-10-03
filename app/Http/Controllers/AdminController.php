@@ -966,13 +966,12 @@ class AdminController extends Controller
 
                 $deliveryKeys = $orders->map(function ($order) {
                     $address = strtolower(trim(preg_replace('/\s+/', ' ', (string) $order->address)));
-                    $city = strtolower(trim(preg_replace('/\s+/', ' ', (string) $order->city)));
 
-                    return $address !== '' && $city !== '' ? $address . '|' . $city : null;
+                    return $address !== '' ? $address : null;
                 })->filter()->unique();
 
                 if ($deliveryKeys->count() !== 1) {
-                    throw new \RuntimeException('Only orders with the same delivery address and city can be merged.');
+                    throw new \RuntimeException('Only orders with the same delivery address can be merged.');
                 }
 
                 foreach ($orders as $order) {
