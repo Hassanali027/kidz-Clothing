@@ -979,6 +979,17 @@ class AdminController extends Controller
                 }
 
                 $firstOrder = $orders->first();
+                $itemsSubtotal = $orders->sum(function ($order) {
+                    return $order->items->sum(function ($item) {
+                        return $item->price * $item->quantity;
+                    });
+                });
+                $savedDiscount = $orders->sum('discount_amount');
+                // The selected orders may each include a shipping charge. For a single
+                // merged parcel, calculate shipping once from the combined items total.
+                $shippingCharge = $itemsSubtotal < 3000 ? 199 : 0;
+                $mergedTotal = max(0, $itemsSubtotal - $savedDiscount + $shippingCharge);
+
                 do {
                     $orderNumber = 'KW-' . strtoupper(Str::random(8));
                 } while (Order::where('order_number', $orderNumber)->exists());
@@ -993,8 +1004,8 @@ class AdminController extends Controller
                     'city' => $firstOrder->city,
                     'phone' => $firstOrder->phone,
                     'coupon_code' => null,
-                    'discount_amount' => $orders->sum('discount_amount'),
-                    'total_amount' => $orders->sum('total_amount'),
+                    'discount_amount' => $savedDiscount,
+                    'total_amount' => $mergedTotal,
                     'payment_method' => $request->payment_method,
                     'status' => 'pending',
                     'workflow_category' => 'merged',

@@ -148,7 +148,7 @@
         <div class="merge-order-dialog" role="dialog" aria-modal="true" aria-labelledby="merge-order-title">
             <button type="button" id="close-merge-modal" class="merge-order-close" aria-label="Close">×</button>
             <h3 id="merge-order-title">Merge Selected Orders</h3>
-            <p>One combined order will be created for one dispatch. Original orders will be kept as merge sources and stock will not be deducted again.</p>
+            <p>One combined order will be created for one dispatch. Delivery is calculated once only: Rs 199 below Rs 3,000 combined items, otherwise free delivery.</p>
             <form action="{{ route('admin.orders.merge') }}" method="POST">
                 @csrf
                 <input type="hidden" name="order_ids" id="merge-order-ids">
