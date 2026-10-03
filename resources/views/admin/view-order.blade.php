@@ -124,7 +124,7 @@
 
                     <div style="margin-bottom: 20px;">
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Payment Method</p>
-                        <p style="font-weight: 600; color: #4caf50;">{{ strtoupper($order->payment_method) }}</p>
+                        <p style="font-weight: 600; color: #4caf50;">{{ $order->payment_method === 'online' ? 'Online Payment' : 'Cash on Delivery (COD)' }}</p>
                     </div>
 
                     @if($order->coupon_code)

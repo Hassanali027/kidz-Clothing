@@ -194,6 +194,7 @@
                             <th style="padding: 16px 20px; font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase;">Order ID</th>
                             <th style="padding: 16px 20px; font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase;">Date</th>
                             <th style="padding: 16px 20px; font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase;">Total</th>
+                            <th style="padding: 16px 20px; font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase;">Payment</th>
                             <th style="padding: 16px 20px; font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase;">Status</th>
                             <th style="padding: 16px 20px;"></th>
                         </tr>
@@ -204,6 +205,7 @@
                             <td style="padding: 16px 20px; color: #555;">{{ $order->order_number }}</td>
                             <td style="padding: 16px 20px; color: #555;">{{ $order->created_at->format('d M, Y') }}</td>
                             <td style="padding: 16px 20px; color: #555;">Rs {{ number_format($order->total_amount) }} ({{ $order->items->sum('quantity') }} Products)</td>
+                            <td style="padding: 16px 20px; color: #555;">{{ $order->payment_method === 'online' ? 'Online Payment' : 'COD' }}</td>
                             <td style="padding: 16px 20px;">
                                 <span class="status-badge status-{{ strtolower($order->status) }}">
                                     {{ strtoupper($order->status) }}

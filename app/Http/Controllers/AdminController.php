@@ -974,6 +974,7 @@ class AdminController extends Controller
             'city' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
             'payment_method' => 'required|in:cod,online',
+            'total_amount' => 'required|numeric|min:0|max:99999999',
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,hold',
             'workflow_category' => 'required|in:' . implode(',', array_keys(Order::workflowCategories())),
             'coupon_code' => 'nullable|string|max:50',
@@ -1015,7 +1016,7 @@ class AdminController extends Controller
                     $discountPercent += $coupon->discount_percent;
                 }
                 $discountAmount = round($subtotal * ($discountPercent / 100), 2);
-                $shippingCharge = $subtotal < 3000 ? 199 : 0;
+                $finalAmount = round((float) $request->total_amount, 2);
 
                 // Remove any previous one-time coupon usage recorded for this order.
                 CouponUsage::where('order_id', $order->id)->delete();
@@ -1034,7 +1035,9 @@ class AdminController extends Controller
                 ]), [
                     'coupon_code' => $coupon ? $coupon->code : null,
                     'discount_amount' => $discountAmount,
-                    'total_amount' => $subtotal - $discountAmount + $shippingCharge,
+                    // This is the final amount agreed for this specific order. It can be
+                    // adjusted by an admin without changing the original item prices.
+                    'total_amount' => $finalAmount,
                     'is_new' => false,
                 ]));
 

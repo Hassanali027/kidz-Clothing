@@ -45,6 +45,12 @@
                         <option value="cod" {{ old('payment_method', $order->payment_method) === 'cod' ? 'selected' : '' }}>Cash on Delivery (COD)</option>
                         <option value="online" {{ old('payment_method', $order->payment_method) === 'online' ? 'selected' : '' }}>Online Payment</option>
                     </select>
+                    <small style="display: block; color: #666; margin-top: 6px;">This saved method is shown to the customer on their order details.</small>
+                </div>
+                <div class="form-group">
+                    <label>Final Order Amount (Rs)</label>
+                    <input name="total_amount" type="number" min="0" step="0.01" class="form-control" value="{{ old('total_amount', $order->total_amount) }}" required>
+                    <small style="display: block; color: #666; margin-top: 6px;">Amount charged for this order. It updates everywhere the customer sees the order.</small>
                 </div>
                 <div class="form-group">
                     <label>Order Status</label>
@@ -68,7 +74,7 @@
                     <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                         @foreach($order->items as $item)
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <span style="font-weight: 600;">{{ $item->product_name }} <small style="color: #64748b;">(Qty: {{ $item->quantity }})</small></span>
+                                <span style="font-weight: 600;">{{ $item->product_name }} <small style="color: #64748b;">(Qty: {{ $item->quantity }}) · Rs {{ number_format($item->price) }} each · Total Rs {{ number_format($item->price * $item->quantity) }}</small></span>
                                 <input name="item_sizes[{{ $item->id }}]" class="form-control" value="{{ old('item_sizes.' . $item->id, $item->size) }}" placeholder="e.g. 2-4 or Medium" style="width: 190px;">
                             </div>
                         @endforeach
@@ -78,7 +84,7 @@
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Coupon Code (Optional)</label>
                     <input name="coupon_code" class="form-control" value="{{ old('coupon_code', $order->coupon_code) }}" placeholder="Enter an active coupon code, or clear to remove it" style="text-transform: uppercase;">
-                    <small style="display: block; color: #666; margin-top: 6px;">The discount and order total will be calculated again when you save.</small>
+                    <small style="display: block; color: #666; margin-top: 6px;">Coupon discount is saved with the order. The Final Order Amount above remains the amount charged to the customer.</small>
                     @if($order->coupon_code)
                         <label style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; color: #dc2626; font-weight: 700; cursor: pointer;">
                             <input type="checkbox" name="remove_coupon" value="1" onchange="document.querySelector('[name=coupon_code]').disabled = this.checked;">

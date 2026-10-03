@@ -161,6 +161,13 @@
             </div>
 
             <div class="summary-card">
+                @php
+                    $itemsSubtotal = $order->items->sum(fn ($item) => $item->price * $item->quantity);
+                    $savedDiscount = (float) ($order->discount_amount ?? 0);
+                    $amountBeforeShipping = max(0, $itemsSubtotal - $savedDiscount);
+                    $shippingAmount = max(0, (float) $order->total_amount - $amountBeforeShipping);
+                    $manualAdjustment = (float) $order->total_amount - $amountBeforeShipping - $shippingAmount;
+                @endphp
                 <div class="summary-header">
                     <div class="summary-header-item">
                         <div class="summary-label">Order ID:</div>
@@ -168,22 +175,28 @@
                     </div>
                     <div class="summary-header-item" style="text-align: right;">
                         <div class="summary-label">Payment Method:</div>
-                        <div class="summary-val" style="text-transform: uppercase;">{{ $order->payment_method }}</div>
+                        <div class="summary-val">{{ $order->payment_method === 'online' ? 'Online Payment' : 'Cash on Delivery (COD)' }}</div>
                     </div>
                 </div>
 
                 <div class="summary-row">
                     <span>Subtotal:</span>
-                    <span style="color: #111; font-weight: 500;">Rs {{ number_format($order->total_amount) }}</span>
+                    <span style="color: #111; font-weight: 500;">Rs {{ number_format($itemsSubtotal) }}</span>
                 </div>
                 <div class="summary-row">
                     <span>Discount:</span>
-                    <span style="color: #111; font-weight: 500;">0%</span>
+                    <span style="color: #111; font-weight: 500;">{{ $savedDiscount > 0 ? '- Rs ' . number_format($savedDiscount) : 'Rs 0' }}</span>
                 </div>
                 <div class="summary-row">
                     <span>Shipping:</span>
-                    <span style="color: #111; font-weight: 500;">Rs 0</span>
+                    <span style="color: #111; font-weight: 500;">Rs {{ number_format($shippingAmount) }}</span>
                 </div>
+                @if(abs($manualAdjustment) > 0.01)
+                    <div class="summary-row">
+                        <span>Order Adjustment:</span>
+                        <span style="color: #111; font-weight: 500;">{{ $manualAdjustment > 0 ? '+ ' : '- ' }}Rs {{ number_format(abs($manualAdjustment)) }}</span>
+                    </div>
+                @endif
                 
                 <div class="summary-total">
                     <span>Total:</span>
