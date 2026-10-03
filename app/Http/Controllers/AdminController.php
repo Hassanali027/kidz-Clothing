@@ -964,9 +964,15 @@ class AdminController extends Controller
                     throw new \RuntimeException('One or more selected orders could not be found.');
                 }
 
-                $contactKeys = $orders->map(fn ($order) => Order::duplicateContactKey($order->phone, $order->address, $order->city))->unique();
-                if ($contactKeys->count() !== 1 || !$contactKeys->first()) {
-                    throw new \RuntimeException('Only orders with the same phone number and delivery address can be merged.');
+                $deliveryKeys = $orders->map(function ($order) {
+                    $address = strtolower(trim(preg_replace('/\s+/', ' ', (string) $order->address)));
+                    $city = strtolower(trim(preg_replace('/\s+/', ' ', (string) $order->city)));
+
+                    return $address !== '' && $city !== '' ? $address . '|' . $city : null;
+                })->filter()->unique();
+
+                if ($deliveryKeys->count() !== 1) {
+                    throw new \RuntimeException('Only orders with the same delivery address and city can be merged.');
                 }
 
                 foreach ($orders as $order) {
