@@ -50,7 +50,7 @@
                 <div class="form-group">
                     <label>Final Order Amount (Rs)</label>
                     <input name="total_amount" type="number" min="0" step="0.01" class="form-control" value="{{ old('total_amount', $order->total_amount) }}" required>
-                    <small style="display: block; color: #666; margin-top: 6px;">Amount charged for this order. It updates everywhere the customer sees the order.</small>
+                    <small style="display: block; color: #666; margin-top: 6px;">{{ $isMergedOrder ? 'This updates automatically when a product, quantity, or price is changed. Without product changes, you can set a final amount manually.' : 'Amount charged for this order. It updates everywhere the customer sees the order.' }}</small>
                 </div>
                 <div class="form-group">
                     <label>Order Status</label>

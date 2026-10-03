@@ -1115,6 +1115,7 @@ class AdminController extends Controller
                 if ($order->merged_into_order_id) {
                     throw new \RuntimeException('This is a source order in a merged order. Edit the combined order instead.');
                 }
+                $isMergedOrder = $order->mergedOrders()->exists();
                 $couponCode = $request->boolean('remove_coupon')
                     ? ''
                     : strtoupper(trim((string) $request->coupon_code));
@@ -1145,7 +1146,11 @@ class AdminController extends Controller
                 if ($coupon) {
                     $discountPercent += $coupon->discount_percent;
                 }
-                $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+                // A merged order can contain discounts from its source orders.
+                // Preserve that effective rate if products are later changed.
+                $discountAmount = $isMergedOrder
+                    ? (float) $order->discount_amount
+                    : round($subtotal * ($discountPercent / 100), 2);
                 $finalAmount = round((float) $request->total_amount, 2);
 
                 // Remove any previous one-time coupon usage recorded for this order.
@@ -1160,7 +1165,6 @@ class AdminController extends Controller
                     $order->deductStock();
                 }
 
-                $isMergedOrder = $order->mergedOrders()->exists();
                 if ($isMergedOrder && (in_array($oldStatus, ['shipped', 'delivered', 'cancelled'], true) || in_array($newStatus, ['shipped', 'delivered', 'cancelled'], true))) {
                     if ($request->filled('new_product_id') || !empty($request->input('remove_item_ids', [])) || !empty($request->input('item_quantities', []))) {
                         throw new \RuntimeException('Products cannot be changed after a merged order is shipped, delivered, or cancelled.');
@@ -1179,6 +1183,7 @@ class AdminController extends Controller
                 ]));
 
                 if ($isMergedOrder) {
+                    $productContentsChanged = false;
                     $removeItemIds = collect($request->input('remove_item_ids', []))->map(fn ($itemId) => (int) $itemId)->all();
                     $requestedQuantities = $request->input('item_quantities', []);
                     $requestedPrices = $request->input('item_prices', []);
@@ -1192,6 +1197,7 @@ class AdminController extends Controller
                         $shouldRemove = in_array($item->id, $removeItemIds, true) || $newQuantity === 0;
 
                         if ($shouldRemove) {
+                            $productContentsChanged = true;
                             if ($item->product_id && ($product = Product::whereKey($item->product_id)->lockForUpdate()->first())) {
                                 $this->adjustMergedOrderStock($product, $item->size, (int) $item->quantity);
                             }
@@ -1205,6 +1211,12 @@ class AdminController extends Controller
                         $newColor = array_key_exists($item->id, $requestedColors)
                             ? trim((string) $requestedColors[$item->id])
                             : (string) $item->color;
+                        $newPrice = array_key_exists($item->id, $requestedPrices) ? (float) $requestedPrices[$item->id] : (float) $item->price;
+                        $productContentsChanged = $productContentsChanged
+                            || $newQuantity !== (int) $item->quantity
+                            || $newPrice !== (float) $item->price
+                            || $newSize !== (string) $item->size
+                            || $newColor !== (string) $item->color;
 
                         if ($item->product_id && ($product = Product::whereKey($item->product_id)->lockForUpdate()->first())) {
                             if ($newSize !== (string) $item->size) {
@@ -1217,13 +1229,14 @@ class AdminController extends Controller
 
                         $item->update([
                             'quantity' => $newQuantity,
-                            'price' => array_key_exists($item->id, $requestedPrices) ? $requestedPrices[$item->id] : $item->price,
+                            'price' => $newPrice,
                             'color' => $newColor ?: null,
                             'size' => $newSize ?: null,
                         ]);
                     }
 
                     if ($request->filled('new_product_id')) {
+                        $productContentsChanged = true;
                         $product = Product::whereKey($request->new_product_id)->lockForUpdate()->firstOrFail();
                         $quantity = (int) $request->new_product_quantity;
                         $size = trim((string) $request->new_product_size);
@@ -1237,6 +1250,20 @@ class AdminController extends Controller
                             'color' => trim((string) $request->new_product_color) ?: $product->color,
                             'size' => $size ?: $product->size,
                             'product_image' => $product->images[0] ?? null,
+                        ]);
+                    }
+
+                    if ($productContentsChanged) {
+                        $updatedSubtotal = $order->items()->get()->sum(function ($item) {
+                            return $item->price * $item->quantity;
+                        });
+                        $savedDiscountRate = $subtotal > 0 ? ($discountAmount / $subtotal) : ($discountPercent / 100);
+                        $updatedDiscount = round($updatedSubtotal * $savedDiscountRate, 2);
+                        $updatedShipping = $updatedSubtotal < 3000 ? 199 : 0;
+
+                        $order->update([
+                            'discount_amount' => $updatedDiscount,
+                            'total_amount' => max(0, $updatedSubtotal - $updatedDiscount + $updatedShipping),
                         ]);
                     }
                 } else {
