@@ -56,6 +56,7 @@
                         <th>Customer</th>
                         <th>City</th>
                         <th>Total Amount</th>
+                        <th>Payment Status</th>
                         <th>Category</th>
                         <th>Status</th>
                         <th>Date</th>
@@ -73,6 +74,13 @@
                             <td>{{ $order->first_name }} {{ $order->last_name }}<br><small>{{ $order->phone }}</small></td>
                             <td>{{ $order->city }}</td>
                             <td>Rs {{ number_format($order->total_amount) }}</td>
+                            <td>
+                                @if($order->payment_method === 'online')
+                                    <span class="payment-status-badge payment-status-online">Online Payment</span>
+                                @else
+                                    <span class="payment-status-badge payment-status-cod">COD</span>
+                                @endif
+                            </td>
                             <td>
                                 <span class="order-category-badge">{{ $categories[$order->workflow_category] ?? 'New Order' }}</span>
                                 @if($order->is_contact_address_duplicate)
@@ -122,7 +130,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">No orders found{{ $search ? ' for “' . $search . '”' : '' }}{{ $selectedCategory ? ' in this category' : '' }}.</td>
+                            <td colspan="10" style="text-align: center; padding: 40px; color: #999;">No orders found{{ $search ? ' for “' . $search . '”' : '' }}{{ $selectedCategory ? ' in this category' : '' }}.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -236,6 +244,9 @@
         .status-delivered { background: #e8f5e9; color: #4caf50; border-color: #c8e6c9; }
         .status-hold { background: #fff7d6; color: #a16207; border-color: #fde68a; }
         .status-cancelled { background: #ffebee; color: #f44336; border-color: #ffcdd2; }
+        .payment-status-badge { display: inline-block; padding: 6px 10px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .payment-status-cod { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .payment-status-online { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
         .order-category-badge { display: inline-block; padding: 6px 10px; background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
         .order-duplicate-contact { display: inline-block; margin-top: 6px; padding: 3px 7px; color: #a16207; background: #fff7d6; border: 1px solid #fde68a; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
         .postex-action { background: #2563eb; color: #fff; }
