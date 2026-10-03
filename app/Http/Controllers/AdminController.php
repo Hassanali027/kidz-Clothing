@@ -1066,10 +1066,15 @@ class AdminController extends Controller
     public function editOrder($id)
     {
         $order = Order::with('items.product')->findOrFail($id);
+        $isMergedOrder = $order->mergedOrders()->exists();
         
         return view('admin.edit-order', [
             'pageTitle' => 'Edit Order - ' . $order->order_number,
             'order' => $order,
+            'isMergedOrder' => $isMergedOrder,
+            'availableProducts' => $isMergedOrder
+                ? Product::where('status', 'active')->orderBy('name')->get(['id', 'name', 'price', 'sale_price', 'color', 'size', 'images'])
+                : collect(),
         ]);
     }
 
@@ -1089,6 +1094,19 @@ class AdminController extends Controller
             'coupon_code' => 'nullable|string|max:50',
             'item_sizes' => 'nullable|array',
             'item_sizes.*' => 'nullable|string|max:255',
+            'item_quantities' => 'nullable|array',
+            'item_quantities.*' => 'nullable|integer|min:0|max:999',
+            'item_prices' => 'nullable|array',
+            'item_prices.*' => 'nullable|numeric|min:0|max:99999999',
+            'item_colors' => 'nullable|array',
+            'item_colors.*' => 'nullable|string|max:255',
+            'remove_item_ids' => 'nullable|array',
+            'remove_item_ids.*' => 'nullable|integer',
+            'new_product_id' => 'nullable|exists:products,id',
+            'new_product_quantity' => 'nullable|required_with:new_product_id|integer|min:1|max:999',
+            'new_product_price' => 'nullable|numeric|min:0|max:99999999',
+            'new_product_color' => 'nullable|string|max:255',
+            'new_product_size' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -1142,6 +1160,13 @@ class AdminController extends Controller
                     $order->deductStock();
                 }
 
+                $isMergedOrder = $order->mergedOrders()->exists();
+                if ($isMergedOrder && (in_array($oldStatus, ['shipped', 'delivered', 'cancelled'], true) || in_array($newStatus, ['shipped', 'delivered', 'cancelled'], true))) {
+                    if ($request->filled('new_product_id') || !empty($request->input('remove_item_ids', [])) || !empty($request->input('item_quantities', []))) {
+                        throw new \RuntimeException('Products cannot be changed after a merged order is shipped, delivered, or cancelled.');
+                    }
+                }
+
                 $order->update(array_merge($request->only([
                     'first_name', 'last_name', 'address', 'delivery_note', 'city', 'phone', 'payment_method', 'status', 'workflow_category',
                 ]), [
@@ -1153,14 +1178,73 @@ class AdminController extends Controller
                     'is_new' => false,
                 ]));
 
-                foreach ($request->input('item_sizes', []) as $itemId => $selectedSize) {
-                    $item = $order->items->firstWhere('id', (int) $itemId);
-                    if (!$item) {
-                        continue;
+                if ($isMergedOrder) {
+                    $removeItemIds = collect($request->input('remove_item_ids', []))->map(fn ($itemId) => (int) $itemId)->all();
+                    $requestedQuantities = $request->input('item_quantities', []);
+                    $requestedPrices = $request->input('item_prices', []);
+                    $requestedColors = $request->input('item_colors', []);
+                    $requestedSizes = $request->input('item_sizes', []);
+
+                    foreach ($order->items as $item) {
+                        $newQuantity = array_key_exists($item->id, $requestedQuantities)
+                            ? (int) $requestedQuantities[$item->id]
+                            : (int) $item->quantity;
+                        $shouldRemove = in_array($item->id, $removeItemIds, true) || $newQuantity === 0;
+
+                        if ($shouldRemove) {
+                            if ($item->product_id && ($product = Product::whereKey($item->product_id)->lockForUpdate()->first())) {
+                                $this->adjustMergedOrderStock($product, $item->size, (int) $item->quantity);
+                            }
+                            $item->delete();
+                            continue;
+                        }
+
+                        $newSize = array_key_exists($item->id, $requestedSizes)
+                            ? trim((string) $requestedSizes[$item->id])
+                            : (string) $item->size;
+                        $newColor = array_key_exists($item->id, $requestedColors)
+                            ? trim((string) $requestedColors[$item->id])
+                            : (string) $item->color;
+
+                        if ($item->product_id && ($product = Product::whereKey($item->product_id)->lockForUpdate()->first())) {
+                            if ($newSize !== (string) $item->size) {
+                                $this->adjustMergedOrderStock($product, $item->size, (int) $item->quantity);
+                                $this->adjustMergedOrderStock($product, $newSize, -$newQuantity);
+                            } else {
+                                $this->adjustMergedOrderStock($product, $newSize, (int) $item->quantity - $newQuantity);
+                            }
+                        }
+
+                        $item->update([
+                            'quantity' => $newQuantity,
+                            'price' => array_key_exists($item->id, $requestedPrices) ? $requestedPrices[$item->id] : $item->price,
+                            'color' => $newColor ?: null,
+                            'size' => $newSize ?: null,
+                        ]);
                     }
 
-                    if (trim((string) $selectedSize) !== '') {
-                        $item->update(['size' => trim($selectedSize)]);
+                    if ($request->filled('new_product_id')) {
+                        $product = Product::whereKey($request->new_product_id)->lockForUpdate()->firstOrFail();
+                        $quantity = (int) $request->new_product_quantity;
+                        $size = trim((string) $request->new_product_size);
+                        $this->adjustMergedOrderStock($product, $size, -$quantity);
+
+                        $order->items()->create([
+                            'product_id' => $product->id,
+                            'product_name' => $product->name,
+                            'quantity' => $quantity,
+                            'price' => $request->filled('new_product_price') ? $request->new_product_price : ($product->sale_price ?: $product->price),
+                            'color' => trim((string) $request->new_product_color) ?: $product->color,
+                            'size' => $size ?: $product->size,
+                            'product_image' => $product->images[0] ?? null,
+                        ]);
+                    }
+                } else {
+                    foreach ($request->input('item_sizes', []) as $itemId => $selectedSize) {
+                        $item = $order->items->firstWhere('id', (int) $itemId);
+                        if ($item && trim((string) $selectedSize) !== '') {
+                            $item->update(['size' => trim($selectedSize)]);
+                        }
                     }
                 }
 
@@ -1261,6 +1345,49 @@ class AdminController extends Controller
 
             return redirect()->back()->with('error', $exception->getMessage());
         }
+    }
+
+    /**
+     * Adjust inventory while editing a merged order. A positive amount restores
+     * stock and a negative amount reserves stock for an added/increased item.
+     */
+    private function adjustMergedOrderStock(Product $product, ?string $size, int $amount): void
+    {
+        if ($amount === 0) {
+            return;
+        }
+
+        $size = trim((string) $size);
+        $sizeStock = $product->size_stock ?? [];
+
+        if ($amount < 0 && $product->status !== 'active') {
+            throw new \RuntimeException($product->name . ' is not available to add to this order.');
+        }
+
+        if (!empty($sizeStock)) {
+            if ($size === '' || !array_key_exists($size, $sizeStock)) {
+                throw new \RuntimeException('Choose a valid available size for ' . $product->name . '.');
+            }
+
+            if ($amount < 0 && (int) $sizeStock[$size] < abs($amount)) {
+                throw new \RuntimeException('Only ' . $sizeStock[$size] . ' item(s) are available for ' . $product->name . ' in size ' . $size . '.');
+            }
+
+            $sizeStock[$size] = max(0, (int) $sizeStock[$size] + $amount);
+            $product->size_stock = $sizeStock;
+        } else {
+            if ($amount < 0 && (int) $product->stock_quantity < abs($amount)) {
+                throw new \RuntimeException('Only ' . $product->stock_quantity . ' item(s) are available for ' . $product->name . '.');
+            }
+
+            $product->stock_quantity = max(0, (int) $product->stock_quantity + $amount);
+        }
+
+        if ($product->status === 'out-of-stock' && ($amount > 0 || !$product->is_out_of_stock)) {
+            $product->status = 'active';
+        }
+
+        $product->save();
     }
 
     private function parseSizeStock($input)

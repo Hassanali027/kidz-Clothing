@@ -70,17 +70,40 @@
                     <small style="display: block; color: #666; margin-top: 6px;">Use this category to organize and filter orders in Order Management.</small>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Ordered Product Sizes</label>
+                    <label>{{ $isMergedOrder ? 'Products in Merged Order' : 'Ordered Product Sizes' }}</label>
                     <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                         @foreach($order->items as $item)
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <span style="font-weight: 600;">{{ $item->product_name }} <small style="color: #64748b;">(Qty: {{ $item->quantity }}) · Rs {{ number_format($item->price) }} each · Total Rs {{ number_format($item->price * $item->quantity) }}</small></span>
-                                <input name="item_sizes[{{ $item->id }}]" class="form-control" value="{{ old('item_sizes.' . $item->id, $item->size) }}" placeholder="e.g. 2-4 or Medium" style="width: 190px;">
+                            <div style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="font-weight: 700; margin-bottom: 10px;">{{ $item->product_name }} <small style="color: #64748b;">Current: Qty {{ $item->quantity }} · Rs {{ number_format($item->price) }} each · Total Rs {{ number_format($item->price * $item->quantity) }}</small></div>
+                                @if($isMergedOrder)
+                                    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 10px; align-items: end;">
+                                        <div><label style="font-size: 12px;">Quantity</label><input name="item_quantities[{{ $item->id }}]" type="number" min="0" class="form-control" value="{{ old('item_quantities.' . $item->id, $item->quantity) }}"></div>
+                                        <div><label style="font-size: 12px;">Price (Rs)</label><input name="item_prices[{{ $item->id }}]" type="number" min="0" step="0.01" class="form-control" value="{{ old('item_prices.' . $item->id, $item->price) }}"></div>
+                                        <div><label style="font-size: 12px;">Color</label><input name="item_colors[{{ $item->id }}]" class="form-control" value="{{ old('item_colors.' . $item->id, $item->color) }}"></div>
+                                        <div><label style="font-size: 12px;">Size</label><input name="item_sizes[{{ $item->id }}]" class="form-control" value="{{ old('item_sizes.' . $item->id, $item->size) }}" placeholder="e.g. 2-4Y"></div>
+                                        <label style="display: flex; align-items: center; gap: 6px; padding-bottom: 10px; color: #dc2626; font-size: 13px; font-weight: 700; white-space: nowrap;"><input type="checkbox" name="remove_item_ids[]" value="{{ $item->id }}"> Remove</label>
+                                    </div>
+                                @else
+                                    <input name="item_sizes[{{ $item->id }}]" class="form-control" value="{{ old('item_sizes.' . $item->id, $item->size) }}" placeholder="e.g. 2-4 or Medium" style="width: 190px;">
+                                @endif
                             </div>
                         @endforeach
                     </div>
-                    <small style="display: block; color: #666; margin-top: 6px;">Write the required size for any product, then save changes.</small>
+                    <small style="display: block; color: #666; margin-top: 6px;">{{ $isMergedOrder ? 'Change quantity, price, color, size, or tick Remove. Save Changes applies all updates.' : 'Write the required size for any product, then save changes.' }}</small>
                 </div>
+                @if($isMergedOrder)
+                    <div class="form-group" style="grid-column: 1 / -1; padding: 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <label style="font-size: 16px;">Add Product to Merged Order</label>
+                        <div style="display: grid; grid-template-columns: 2fr repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 10px;">
+                            <div><label style="font-size: 12px;">Product</label><select name="new_product_id" class="form-control"><option value="">Select product</option>@foreach($availableProducts as $product)<option value="{{ $product->id }}" {{ old('new_product_id') == $product->id ? 'selected' : '' }}>{{ $product->name }}</option>@endforeach</select></div>
+                            <div><label style="font-size: 12px;">Quantity</label><input name="new_product_quantity" type="number" min="1" class="form-control" value="{{ old('new_product_quantity', 1) }}"></div>
+                            <div><label style="font-size: 12px;">Price (Rs)</label><input name="new_product_price" type="number" min="0" step="0.01" class="form-control" value="{{ old('new_product_price') }}" placeholder="Product price"></div>
+                            <div><label style="font-size: 12px;">Color</label><input name="new_product_color" class="form-control" value="{{ old('new_product_color') }}"></div>
+                            <div><label style="font-size: 12px;">Size</label><input name="new_product_size" class="form-control" value="{{ old('new_product_size') }}" placeholder="e.g. 2-4Y"></div>
+                        </div>
+                        <small style="display: block; color: #666; margin-top: 8px;">For size-wise stock products, enter the exact available size. Adding a product reserves its stock.</small>
+                    </div>
+                @endif
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Coupon Code (Optional)</label>
                     <input name="coupon_code" class="form-control" value="{{ old('coupon_code', $order->coupon_code) }}" placeholder="Enter an active coupon code, or clear to remove it" style="text-transform: uppercase;">
