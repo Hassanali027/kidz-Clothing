@@ -881,8 +881,10 @@ class AdminController extends Controller
         }
         $search = trim((string) $request->query('search', ''));
 
-        $newOrdersCount = Order::where('is_new', true)->count();
-        $orders = Order::when($selectedCategory, function ($query) use ($selectedCategory) {
+        $newOrdersCount = Order::where('is_new', true)->whereNull('merged_into_order_id')->count();
+        $orders = Order::withCount('mergedOrders')
+            ->whereNull('merged_into_order_id')
+            ->when($selectedCategory, function ($query) use ($selectedCategory) {
                 $query->where('workflow_category', $selectedCategory);
             })
             ->when($search !== '', function ($query) use ($search) {
@@ -898,7 +900,7 @@ class AdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $duplicateContactCounts = Order::select('phone', 'address', 'city')
+        $duplicateContactCounts = Order::whereNull('merged_into_order_id')->select('phone', 'address', 'city')
             ->get()
             ->map(function ($order) {
                 return Order::duplicateContactKey($order->phone, $order->address, $order->city);
@@ -929,6 +931,97 @@ class AdminController extends Controller
             'pageTitle' => 'Order Details - ' . $order->order_number,
             'order' => $order
         ]);
+    }
+
+    /** Combine selected same-customer orders into one order for a single dispatch. */
+    public function mergeOrders(Request $request)
+    {
+        $request->validate([
+            'order_ids' => 'required|string',
+            'payment_method' => 'required|in:cod,online',
+        ]);
+
+        $orderIds = collect(explode(',', $request->order_ids))
+            ->filter(fn ($id) => ctype_digit(trim($id)))
+            ->map(fn ($id) => (int) trim($id))
+            ->unique()
+            ->values();
+
+        if ($orderIds->count() < 2) {
+            return back()->with('error', 'Select at least two orders to merge.');
+        }
+
+        try {
+            $mergedOrder = DB::transaction(function () use ($orderIds, $request) {
+                $orders = Order::with('items')
+                    ->whereIn('id', $orderIds)
+                    ->lockForUpdate()
+                    ->get()
+                    ->sortBy('created_at')
+                    ->values();
+
+                if ($orders->count() !== $orderIds->count()) {
+                    throw new \RuntimeException('One or more selected orders could not be found.');
+                }
+
+                $contactKeys = $orders->map(fn ($order) => Order::duplicateContactKey($order->phone, $order->address, $order->city))->unique();
+                if ($contactKeys->count() !== 1 || !$contactKeys->first()) {
+                    throw new \RuntimeException('Only orders with the same phone number and delivery address can be merged.');
+                }
+
+                foreach ($orders as $order) {
+                    if ($order->merged_into_order_id || $order->mergedOrders()->exists()) {
+                        throw new \RuntimeException('An already merged order cannot be merged again.');
+                    }
+                    if (in_array($order->status, ['cancelled', 'delivered'], true) || $order->postex_tracking_number) {
+                        throw new \RuntimeException('Cancelled, delivered, or already dispatched orders cannot be merged.');
+                    }
+                }
+
+                $firstOrder = $orders->first();
+                do {
+                    $orderNumber = 'KW-' . strtoupper(Str::random(8));
+                } while (Order::where('order_number', $orderNumber)->exists());
+
+                $mergedOrder = Order::create([
+                    'user_id' => $firstOrder->user_id,
+                    'order_number' => $orderNumber,
+                    'first_name' => $firstOrder->first_name,
+                    'last_name' => $firstOrder->last_name,
+                    'address' => $firstOrder->address,
+                    'delivery_note' => $firstOrder->delivery_note,
+                    'city' => $firstOrder->city,
+                    'phone' => $firstOrder->phone,
+                    'coupon_code' => null,
+                    'discount_amount' => $orders->sum('discount_amount'),
+                    'total_amount' => $orders->sum('total_amount'),
+                    'payment_method' => $request->payment_method,
+                    'status' => 'pending',
+                    'workflow_category' => 'merged',
+                    'is_new' => true,
+                ]);
+
+                foreach ($orders as $order) {
+                    foreach ($order->items as $item) {
+                        $mergedOrder->items()->create($item->only([
+                            'product_id', 'product_name', 'quantity', 'price', 'color', 'size', 'product_image',
+                        ]));
+                    }
+
+                    $order->update([
+                        'merged_into_order_id' => $mergedOrder->id,
+                        'is_new' => false,
+                    ]);
+                }
+
+                return $mergedOrder;
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()->route('admin.orders.view', $mergedOrder->id)
+            ->with('success', 'Orders merged successfully. Dispatch combined order ' . $mergedOrder->order_number . '.');
     }
 
     public function printOrders(Request $request)
@@ -985,6 +1078,9 @@ class AdminController extends Controller
         try {
             $order = DB::transaction(function () use ($request, $id) {
                 $order = Order::with('items.product')->lockForUpdate()->findOrFail($id);
+                if ($order->merged_into_order_id) {
+                    throw new \RuntimeException('This is a source order in a merged order. Edit the combined order instead.');
+                }
                 $couponCode = $request->boolean('remove_coupon')
                     ? ''
                     : strtoupper(trim((string) $request->coupon_code));
@@ -1073,6 +1169,12 @@ class AdminController extends Controller
     {
         try {
             $order = Order::findOrFail($id);
+            if ($order->merged_into_order_id) {
+                return redirect()->back()->with('error', 'This is a source order in a merged order and cannot be deleted separately.');
+            }
+            if ($order->mergedOrders()->exists()) {
+                return redirect()->back()->with('error', 'A merged order cannot be deleted. Keep the order history intact.');
+            }
             if ($order->status !== 'cancelled') {
                 $order->restoreStock();
             }
@@ -1091,6 +1193,9 @@ class AdminController extends Controller
             ]);
 
             $order = Order::findOrFail($id);
+            if ($order->merged_into_order_id) {
+                return redirect()->back()->with('error', 'Update the combined order instead of a merged source order.');
+            }
             $oldStatus = $order->status;
             $newStatus = $request->status;
 
@@ -1111,6 +1216,10 @@ class AdminController extends Controller
     public function createPostExShipment($id, PostExService $postEx)
     {
         $order = Order::with('items')->findOrFail($id);
+
+        if ($order->merged_into_order_id) {
+            return redirect()->back()->with('error', 'Create the shipment from the combined merged order instead.');
+        }
 
         if (in_array($order->status, ['cancelled', 'delivered'], true)) {
             return redirect()->back()->with('error', 'PostEx shipment cannot be created for a cancelled or delivered order.');

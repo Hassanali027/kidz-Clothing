@@ -45,6 +45,9 @@
             <button type="button" id="print-selected-orders" class="btn-primary" disabled style="padding: 10px 14px;">
                 <i class="fa-solid fa-print"></i> Print Selected (0)
             </button>
+            <button type="button" id="merge-selected-orders" class="btn-secondary" disabled style="padding: 10px 14px; background: #7c3aed; color: #fff;">
+                <i class="fa-solid fa-code-branch"></i> Merge Selected (0)
+            </button>
         </form>
         
         <div class="table-responsive">
@@ -70,6 +73,9 @@
                             <td>
                                 <strong>{{ $order->order_number }}</strong>
                                 @if($order->is_new)<span class="new-order-flag">NEW</span>@endif
+                                @if($order->merged_orders_count)
+                                    <span class="merged-order-flag">Merged {{ $order->merged_orders_count }} orders</span>
+                                @endif
                             </td>
                             <td>{{ $order->first_name }} {{ $order->last_name }}<br><small>{{ $order->phone }}</small></td>
                             <td>{{ $order->city }}</td>
@@ -138,6 +144,26 @@
         </div>
     </div>
 
+    <div id="merge-order-modal" class="merge-order-modal" aria-hidden="true">
+        <div class="merge-order-dialog" role="dialog" aria-modal="true" aria-labelledby="merge-order-title">
+            <button type="button" id="close-merge-modal" class="merge-order-close" aria-label="Close">×</button>
+            <h3 id="merge-order-title">Merge Selected Orders</h3>
+            <p>One combined order will be created for one dispatch. Original orders will be kept as merge sources and stock will not be deducted again.</p>
+            <form action="{{ route('admin.orders.merge') }}" method="POST">
+                @csrf
+                <input type="hidden" name="order_ids" id="merge-order-ids">
+                <div class="form-group">
+                    <label for="merge-payment-method">Payment Method for Combined Order</label>
+                    <select name="payment_method" id="merge-payment-method" class="form-control" required>
+                        <option value="cod">Cash on Delivery (COD)</option>
+                        <option value="online">Online Payment</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Create Merged Order</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Undo Delete Notification -->
     <div id="undo-notification" style="display: none; position: fixed; bottom: 30px; right: 30px; background: #1e293b; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; min-width: 300px;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
@@ -195,12 +221,18 @@
             var selectAll = document.getElementById('select-all-orders');
             var selectors = Array.prototype.slice.call(document.querySelectorAll('.order-selector'));
             var printButton = document.getElementById('print-selected-orders');
+            var mergeButton = document.getElementById('merge-selected-orders');
+            var mergeModal = document.getElementById('merge-order-modal');
+            var mergeOrderIds = document.getElementById('merge-order-ids');
+            var closeMergeModal = document.getElementById('close-merge-modal');
             if (!selectAll) return;
 
             function updatePrintButton() {
                 var selectedCount = selectors.filter(function (checkbox) { return checkbox.checked; }).length;
                 printButton.disabled = selectedCount === 0;
                 printButton.innerHTML = '<i class="fa-solid fa-print"></i> Print Selected (' + selectedCount + ')';
+                mergeButton.disabled = selectedCount < 2;
+                mergeButton.innerHTML = '<i class="fa-solid fa-code-branch"></i> Merge Selected (' + selectedCount + ')';
             }
 
             selectAll.addEventListener('change', function () {
@@ -220,6 +252,24 @@
                     .map(function (checkbox) { return checkbox.value; });
                 if (!selectedIds.length) return;
                 window.open('{{ route('admin.orders.print') }}?ids=' + encodeURIComponent(selectedIds.join(',')), '_blank');
+            });
+
+            mergeButton.addEventListener('click', function () {
+                var selectedIds = selectors.filter(function (checkbox) { return checkbox.checked; })
+                    .map(function (checkbox) { return checkbox.value; });
+                if (selectedIds.length < 2) return;
+                mergeOrderIds.value = selectedIds.join(',');
+                mergeModal.style.display = 'flex';
+                mergeModal.setAttribute('aria-hidden', 'false');
+            });
+
+            function hideMergeModal() {
+                mergeModal.style.display = 'none';
+                mergeModal.setAttribute('aria-hidden', 'true');
+            }
+            closeMergeModal.addEventListener('click', hideMergeModal);
+            mergeModal.addEventListener('click', function (event) {
+                if (event.target === mergeModal) hideMergeModal();
             });
         })();
     </script>
@@ -257,6 +307,12 @@
         .new-order-row { background: #fffbeb; }
         .new-order-row td:first-child { border-left: 4px solid #f59e0b; }
         .new-order-flag { display: inline-block; margin: 7px 0 0; padding: 3px 7px; background: #f59e0b; color: #fff; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+        .merged-order-flag { display: inline-block; margin: 7px 0 0; padding: 3px 7px; background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; border-radius: 999px; font-size: 10px; font-weight: 800; }
+        .merge-order-modal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .merge-order-dialog { position: relative; width: min(100%, 460px); padding: 28px; background: #fff; border-radius: 14px; box-shadow: 0 20px 50px rgba(15, 23, 42, .25); }
+        .merge-order-dialog h3 { margin: 0 0 10px; font-size: 20px; }
+        .merge-order-dialog > p { margin: 0 0 20px; color: #64748b; line-height: 1.5; }
+        .merge-order-close { position: absolute; top: 10px; right: 14px; border: 0; background: transparent; color: #64748b; font-size: 28px; line-height: 1; cursor: pointer; }
         #select-all-orders, .order-selector { width: 17px; height: 17px; accent-color: #f06292; cursor: pointer; vertical-align: middle; }
         #print-selected-orders:disabled { opacity: 0.55; cursor: not-allowed; }
         

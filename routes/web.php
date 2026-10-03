@@ -104,7 +104,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // User Account
 Route::middleware('auth')->group(function () {
     Route::get('/accounts', function () {
-        $orders = auth()->user()->orders()->orderBy('created_at', 'desc')->get();
+        $orders = auth()->user()->orders()->whereNull('merged_into_order_id')->orderBy('created_at', 'desc')->get();
         return view('accounts', [
             'pageTitle' => 'My Account | Kidz Wear',
             'metaDescription' => 'Manage your Kidz Wear account.',
@@ -173,6 +173,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     // Order Management Routes
     Route::get('/orders', [AdminController::class, 'orderList'])->name('orders');
     Route::get('/orders/print', [AdminController::class, 'printOrders'])->name('orders.print');
+    Route::post('/orders/merge', [AdminController::class, 'mergeOrders'])->name('orders.merge');
     Route::get('/orders/{id}', [AdminController::class, 'viewOrder'])->name('orders.view');
     Route::get('/orders/{id}/edit', [AdminController::class, 'editOrder'])->name('orders.edit');
     Route::post('/orders/{id}/update', [AdminController::class, 'updateOrder'])->name('orders.update');

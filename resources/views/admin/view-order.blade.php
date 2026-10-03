@@ -116,6 +116,22 @@
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Order Number</p>
                         <p style="font-weight: 800; font-size: 20px; color: #2196F3;">{{ $order->order_number }}</p>
                     </div>
+
+                    @if($order->merged_into_order_id)
+                        <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb;">
+                            <p style="margin-bottom: 6px; color: #a16207; font-size: 12px; font-weight: 800; text-transform: uppercase;">Merged Source Order</p>
+                            <a href="{{ route('admin.orders.view', $order->mergedIntoOrder->id) }}" style="color: #a16207; font-weight: 700;">Open combined order {{ $order->mergedIntoOrder->order_number }}</a>
+                        </div>
+                    @endif
+
+                    @if($order->mergedOrders()->exists())
+                        <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #ddd6fe; border-radius: 8px; background: #f5f3ff;">
+                            <p style="margin-bottom: 8px; color: #6d28d9; font-size: 12px; font-weight: 800; text-transform: uppercase;">Merged Source Orders</p>
+                            @foreach($order->mergedOrders as $sourceOrder)
+                                <a href="{{ route('admin.orders.view', $sourceOrder->id) }}" style="display: block; margin-top: 5px; color: #6d28d9; font-weight: 700; text-decoration: none;">{{ $sourceOrder->order_number }}</a>
+                            @endforeach
+                        </div>
+                    @endif
                     
                     <div style="margin-bottom: 20px;">
                         <p style="margin-bottom: 5px; color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase;">Order Date</p>

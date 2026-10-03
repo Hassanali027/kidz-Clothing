@@ -22,6 +22,7 @@ class Order extends Model
         'dispatched' => 'Dispatched',
         'hold' => 'Hold',
         'posted' => 'Posted',
+        'merged' => 'Merged Order',
     ];
 
     protected $fillable = [
@@ -43,6 +44,7 @@ class Order extends Model
         'postex_created_at',
         'workflow_category',
         'is_new',
+        'merged_into_order_id',
     ];
 
     public static function workflowCategories(): array
@@ -74,6 +76,18 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** The combined order this source order was moved into. */
+    public function mergedIntoOrder()
+    {
+        return $this->belongsTo(self::class, 'merged_into_order_id');
+    }
+
+    /** Original orders that were combined into this order. */
+    public function mergedOrders()
+    {
+        return $this->hasMany(self::class, 'merged_into_order_id');
     }
 
     /**
