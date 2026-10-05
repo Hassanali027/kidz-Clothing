@@ -1300,7 +1300,36 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'This is a source order in a merged order and cannot be deleted separately.');
             }
             if ($order->mergedOrders()->exists()) {
-                return redirect()->back()->with('error', 'A merged order cannot be deleted. Keep the order history intact.');
+                DB::transaction(function () use ($order) {
+                    $mergedOrder = Order::with(['items', 'mergedOrders.items'])->lockForUpdate()->findOrFail($order->id);
+                    $sourceOrders = $mergedOrder->mergedOrders;
+
+                    // Revert only stock changes made after merging (added/removed items
+                    // or quantity changes). The original orders already own their stock.
+                    $sourceStock = $this->mergedOrderItemStockMap($sourceOrders->flatMap->items);
+                    $mergedStock = $this->mergedOrderItemStockMap($mergedOrder->items);
+
+                    foreach (array_unique(array_merge(array_keys($sourceStock), array_keys($mergedStock))) as $key) {
+                        $source = $sourceStock[$key] ?? null;
+                        $current = $mergedStock[$key] ?? null;
+                        $productId = $current['product_id'] ?? $source['product_id'] ?? null;
+                        $size = $current['size'] ?? $source['size'] ?? null;
+                        $quantityDifference = ($current['quantity'] ?? 0) - ($source['quantity'] ?? 0);
+
+                        if ($productId && $quantityDifference !== 0 && ($product = Product::whereKey($productId)->lockForUpdate()->first())) {
+                            $this->adjustMergedOrderStock($product, $size, $quantityDifference);
+                        }
+                    }
+
+                    Order::whereIn('id', $sourceOrders->pluck('id'))
+                        ->update(['merged_into_order_id' => null]);
+
+                    // Deleting the combined record only unmerges it; do not restore all
+                    // its stock because the original orders are being kept.
+                    $mergedOrder->delete();
+                });
+
+                return redirect()->route('admin.orders')->with('success', 'Merged order deleted and original orders restored.');
             }
             if ($order->status !== 'cancelled') {
                 $order->restoreStock();
@@ -1415,6 +1444,33 @@ class AdminController extends Controller
         }
 
         $product->save();
+    }
+
+    /** Build a product + size quantity map for safely undoing a merged order. */
+    private function mergedOrderItemStockMap($items): array
+    {
+        $stock = [];
+
+        foreach ($items as $item) {
+            if (!$item->product_id) {
+                continue;
+            }
+
+            $size = trim((string) $item->size);
+            $key = $item->product_id . '|' . strtolower($size);
+
+            if (!isset($stock[$key])) {
+                $stock[$key] = [
+                    'product_id' => (int) $item->product_id,
+                    'size' => $size,
+                    'quantity' => 0,
+                ];
+            }
+
+            $stock[$key]['quantity'] += (int) $item->quantity;
+        }
+
+        return $stock;
     }
 
     private function parseSizeStock($input)
